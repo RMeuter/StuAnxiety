@@ -1,8 +1,11 @@
 from django import forms
-from django.contrib.auth.models import Patient
+from django.contrib.auth.models import User
+
 from django.contrib.auth.forms import UserCreationForm
 
-class PatientRegisterFrom(UserCreationForm):
+
+
+class UserRegisterFrom(UserCreationForm):
     email = forms.EmailField()
 
     class Meta:

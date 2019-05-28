@@ -12,11 +12,11 @@ class timeStampeModel(models.Model):
 
 
 
-class Patient(timeStampeModel):
+class User(timeStampeModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     def __str__(self):
         return "Etudiant ".format(self.user.username)
 
 class Journal(timeStampeModel):
-    id_patient = models.ForeignKey('Patient', on_delete=models.CASCADE)
+    id_patient = models.ForeignKey('User', on_delete=models.CASCADE)
     temps = models.PositiveSmallIntegerField()
