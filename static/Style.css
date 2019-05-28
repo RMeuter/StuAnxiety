@@ -1,0 +1,23 @@
+body {
+    font-family: sans-serif;
+
+}
+
+header {
+    background-color: aquamarine;
+    height: 50px;
+    font-size: 20px;
+    justify-content: center;
+}
+
+#bandeau {
+    background-color: aquamarine;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+}
+
+footer {
+
+}

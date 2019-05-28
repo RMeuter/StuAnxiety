@@ -1,0 +1,12 @@
+ <header class="p-2">No pain No gain
+       {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="btn btn-primary" role="button">Se déconnecter ?</a>
+        <a href="{% url 'profil' %}" class="btn btn-primary" role="button">Mon profil</a>
+        {% else %}
+        <a href="{% url 'register' %}" class="btn btn-primary" role="button">s'enregistrer ?</a>
+        <a href="{% url 'login' %}" class="btn btn-primary" role="button">Se connecter ?</a>
+        {% endif %}
+        <a href="#" class="btn btn-primary" role="button">Je suis practicien
+        </a>
+        <a href="#" class="btn-primary btn" role="button">Accès modules direct</a>
+    </header>
