@@ -9,4 +9,4 @@ class ModuleForm(ModelForm):
 class SectionForm (ModelForm):
     class Meta:
         model=Section
-        fields=['ordre', 'text', 'image']
+        fields=[ 'titre','image','text']
