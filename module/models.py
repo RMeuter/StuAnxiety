@@ -9,6 +9,7 @@ class timeStampeModel(models.Model):
         abstract = True
 
 class Module (timeStampeModel):
+    id = models.UUIDField(primary_key=True)
     nom =   models.CharField(max_length=50)
 
 class Section(timeStampeModel):
