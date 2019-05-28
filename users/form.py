@@ -7,4 +7,4 @@ class PatientRegisterForm(UserCreationForm):
     
     class Meta(UserCreationForm.Meta):
         model=Patient
-        fields= UserCreationForm.Meta.fields + ('custom_field',) 
+        fields=  ['email', 'prenom', 'nom', 'adress', 'university'] 

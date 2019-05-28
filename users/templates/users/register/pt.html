@@ -1,0 +1,26 @@
+{% extends 'layouts/baseClient.html'%}
+{% load crispy_forms_tags %}
+{% block title %}Enregistrement{% endblock title %}
+   {% block content %}
+<div class="content-section">
+   <div class="container m-2 p-3">
+       
+    <form method="post" >
+           {% csrf_token %}
+        <fielset class="form-group">
+            <legend class="border-bottom mb-4">Enregistement</legend>
+        {{ form|crispy }}
+        </fielset>
+        <div class="form-group">
+        <button class="btn btn-outline-info" type="submit">Enregistrement</button>
+        </div>
+    </form>
+   </div>
+    <div class="border-top pt-3">
+       <small class="text-muted">
+           Déjà un compte ?
+        <a class="ml-2" href="{url 'login'}">Enregistre toi</a>
+       </small>
+    </div>
+</div>
+   {% endblock content %}
