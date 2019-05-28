@@ -1,0 +1,12 @@
+{% extends 'layouts/baseClient.html'%}
+{% block title %}Se connecter ?{% endblock title %}
+   {% block content %}
+<h2>Tu es déconnecter !</h2>
+    <div class="border-top pt-3">
+       <small class="text-muted">
+           Envie de te reconnecter ?
+        <a class="ml-2" href="{% url 'login' %}">Connexion</a>
+       </small>
+    </div>
+
+   {% endblock content %}
