@@ -1,4 +1,4 @@
-# E-StudAnxiety
+# StudAnxiety
 Mise en place de module de thérapie à distance pour des étudiants soufrant d'anxiété et d'insomnie
 
 But : 
