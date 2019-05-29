@@ -1,3 +1,4 @@
+#https://openclassrooms.com/fr/courses/1871271-developpez-votre-site-web-avec-le-framework-django/1873767-les-utilisateurs
 from django.db import models
 from django.contrib.auth.models import User
 

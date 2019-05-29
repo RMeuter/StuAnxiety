@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import model_to_dict
 from django.utils.decorators import method_decorator
-from django.views.generic import View
+from django.views.generic import View, CreateView
 from .models import Section
 
 # Create your views here.
@@ -19,44 +19,46 @@ class SectionList (View):
         data['module'] = module
         return JsonResponse(data)
 
-
-
-class  RoomDetail(View):
-    def  get(self, request, pk):
-        section = get_object_or_404(Section, pk=pk)
+@method_decorator(csrf_exempt, name='dispatch')
+class  CreateSection(CreateView):
+    def  post(self, request):
         data =  dict()
-        data['section'] = model_to_dict(section)
+        form = SectionForm(request.POST)
+        if form.is_valid():
+            section = form.save()
+            data['section'] = model_to_dict(section)
+        else:
+            data['error'] =  "form not valid!"
         return JsonResponse(data)
 
+@method_decorator(csrf_exempt, name='dispatch')
+class  SectionUpdate(View):
+    def  post(self, request, pk):
+        data =  dict()
+        section = Section.objects.get(pk=pk)
+        form = SectionForm(instance=section, data=request.POST)
+        if form.is_valid():
+            section = form.save()
+            data['section'] = model_to_dict(section)
+        else:
+            data['error'] =  "form not valid!"
+        return JsonResponse(data)
 
+class  SectionDelete(View):
+    def  post(self, request, pk):
+        data =  dict()
+        section = Section.objects.get(pk=pk)
+        if section:
+            section.delete()
+            data['message'] =  "Section deleted!"
+        else:
+            data['message'] =  "Error!"
+        return JsonResponse(data)
 
-
-
+#class EnvoieForm
 #------------------------------------------------
 
 def CreationModule(request):
     form = SectionForm()
     return render(request, "module/MakeModule.html", {'form':form})
 
-
-
-"""
-from django import forms
-from .models import Room
-
-
-
-
-from django.urls import path, include
-from django.views.generic.base import TemplateView
-from rooms import views
-
-urlpatterns = [
-    path('rooms/', TemplateView.as_view(template_name="rooms/main.html"), name='room_main'),
-    path('rooms/list', views.RoomList.as_view(), name='room_list'),
-    path('rooms/create', views.RoomCreate.as_view(), name='room_create'),
-    path('rooms/update/<int:pk>', views.RoomUpdate.as_view(), name='room_update'),
-    path('rooms/delete/<int:pk>', views.RoomDelete.as_view(), name='room_delete'),
-    path('rooms/<int:pk>', views.RoomDetail.as_view(), name='room_detail'), 
-]
-"""
