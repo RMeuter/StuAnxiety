@@ -8,8 +8,13 @@ class timeStampeModel(models.Model):
     class Meta:
         abstract = True
 
+
 class Module (timeStampeModel):
     nom =   models.CharField(max_length=50)
+    class Meta:
+        verbose_name="Module"
+        ordering=["created_at"]
+        
     def __str__(self):
         return self.nom
     
@@ -19,30 +24,35 @@ class Section(timeStampeModel):
     text = models.TextField()
     image = models.ImageField()
     module = models.ForeignKey('Module', on_delete=models.CASCADE)
+    class Meta:
+        verbose_name="Section"
+        ordering=["created_at", "ordre"]
+        
     def __str__(self):
         return self.titre
-    
-    class Meta :
-        ordering =['ordre']
+        
 
 #-------------------------------------- Questionnaire------------------------------------------------------------
-
-class Questionnaire(models.Model):
-    nom =   models.CharField(max_length=150)
+        
+class Questionnaire(timeStampeModel):
+    nom = models.CharField(max_length=150)
+    class Meta:
+        verbose_name="Questionnaire"
+        ordering=["created_at"]
     def __str__(self):
         return self.nom
-    
 class Question(models.Model):
-    question =   models.CharField(max_length=254)
-    questionnaire  = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
+    question =   models.CharField(max_length=250)
+    questionnaire  = models.ForeignKey('Questionnaire', on_delete=models.CASCADE)
     def __str__(self):
         return self.question
         
 class Response(models.Model):
-    reponse =   models.CharField(max_length=254)
-    question  = models.ForeignKey(Question, on_delete=models.CASCADE)
+    reponse =   models.CharField(max_length=250)
+    question  = models.ForeignKey('Question', on_delete=models.CASCADE)
     def __str__(self):
         return self.reponse
-        
+"""
+"""
     
     

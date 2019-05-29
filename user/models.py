@@ -17,7 +17,16 @@ class timeStampeModel(models.Model):
 
 class User(timeStampeModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    nom = models.CharField(max_length=200)
     
     def __str__(self):
         return "Etudiant ".format(self.user.username)
 
+class Patient(timeStampeModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    
+    
+class Journal(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    Patient  = models.ForeignKey('Patient', on_delete=models.CASCADE)
+    
