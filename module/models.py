@@ -33,26 +33,22 @@ class Section(timeStampeModel):
         
 
 #-------------------------------------- Questionnaire------------------------------------------------------------
-        
-class Questionnaire(timeStampeModel):
+    
+class Questionnaire(models.Model):
     nom = models.CharField(max_length=150)
-    class Meta:
-        verbose_name="Questionnaire"
-        ordering=["created_at"]
     def __str__(self):
         return self.nom
+    
 class Question(models.Model):
     question =   models.CharField(max_length=250)
-    questionnaire  = models.ForeignKey('Questionnaire', on_delete=models.CASCADE)
+    questionnaire  = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
     def __str__(self):
         return self.question
         
 class Response(models.Model):
     reponse =   models.CharField(max_length=250)
-    question  = models.ForeignKey('Question', on_delete=models.CASCADE)
+    question  = models.ForeignKey(Question, on_delete=models.CASCADE)
     def __str__(self):
         return self.reponse
-"""
-"""
     
     
