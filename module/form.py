@@ -10,3 +10,8 @@ class SectionForm (ModelForm):
     class Meta:
         model=Section
         fields=[ 'titre','image','text']
+        label={
+            'titre': ('titre'),
+            'image': ('Image ou shéma section'),
+            'text': ('Contenue de la section'),
+        }

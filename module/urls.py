@@ -9,4 +9,5 @@ urlpatterns = [
     path('sections/create', views.CreateSection.as_view(), name='section_create'),
     path('sections/update/<int:pk>', views.SectionUpdate.as_view(), name='section_update'),
     path('sections/delete/<int:pk>', views.SectionDelete.as_view(), name='section_delete'),
+    path('sections/form', views.EnvoieForm.as_view(), name='section_form'),
               ]

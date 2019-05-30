@@ -17,7 +17,7 @@ class Module (timeStampeModel):
         
     def __str__(self):
         return self.nom
-    
+
 class Section(timeStampeModel):
     titre = models.CharField(max_length=250)
     ordre = models.FloatField()
@@ -30,6 +30,11 @@ class Section(timeStampeModel):
         
     def __str__(self):
         return self.titre
+    class Meta: 
+        permissions = (
+            ("Up_Module", "Création, Modification et suppression modules"),
+            ("Up_Quest", "Création, Modification et suppression Questionnaire"),
+        )
         
 
 #-------------------------------------- Questionnaire------------------------------------------------------------

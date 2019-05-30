@@ -1,12 +1,14 @@
 from django.shortcuts import render
 from .form import SectionForm
 # Utilisation d'ajax
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import model_to_dict
 from django.utils.decorators import method_decorator
 from django.views.generic import View, CreateView
 from .models import Section
+
+from django.contrib.auth.decorators import permission_required
 
 # Create your views here.
 # https://www.techiediaries.com/python-django-ajax/
@@ -19,6 +21,7 @@ class SectionList (View):
         data['module'] = module
         return JsonResponse(data)
 
+#@permission_required("module.Up_Module")
 @method_decorator(csrf_exempt, name='dispatch')
 class  CreateSection(CreateView):
     def  post(self, request):
@@ -31,6 +34,8 @@ class  CreateSection(CreateView):
             data['error'] =  "form not valid!"
         return JsonResponse(data)
 
+
+#@permission_required("module.Up_Module")
 @method_decorator(csrf_exempt, name='dispatch')
 class  SectionUpdate(View):
     def  post(self, request, pk):
@@ -44,6 +49,8 @@ class  SectionUpdate(View):
             data['error'] =  "form not valid!"
         return JsonResponse(data)
 
+
+#@permission_required("module.Up_Module")
 class  SectionDelete(View):
     def  post(self, request, pk):
         data =  dict()
@@ -55,7 +62,10 @@ class  SectionDelete(View):
             data['message'] =  "Error!"
         return JsonResponse(data)
 
-#class EnvoieForm
+class EnvoieForm(View):
+    def get(self, request):
+        form = SectionForm()
+        return HttpResponse(form)
 #------------------------------------------------
 
 def CreationModule(request):

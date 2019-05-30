@@ -4,11 +4,12 @@ from django.contrib.auth.forms import UserCreationForm
 
 
 
-class UserRegisterFrom(UserCreationForm):
-    email = forms.EmailField()
+class PatientRegisterFrom(UserCreationForm):
+    email = forms.EmailField(label='Votre email', required=True)
+    univ = forms.CharField(max_length=150, label='Votre université :')
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email', 'univ','password1', 'password2']
 
 
