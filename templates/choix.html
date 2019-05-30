@@ -1,0 +1,25 @@
+   {% extends 'layouts/baseClient.html'%}
+   {% block title %}
+Choisir
+   {% endblock  %}
+   {% block content %}
+   <div class="container m-3 p-2">
+       
+<div class="jumbotron">
+ <h1 class="display-4 text-center">Bienvenue !</h1>
+  <p class="lead">Deux choix sont à ta disposition maintenant :
+  <ul>
+      <li class="li">Tu peux découvrir nos conseils professionnel pour mieux progresser.</li>
+      <li class="li">Tu peux mis en relation avec un clinicien qui te prendra en charge à distance.</li>
+  </ul>
+  
+  </p>
+  <hr class="my-4">
+  <small>Si tu choisie d'etre suivi, seulement tes données de sommeil et les facteurs jouant seront transmis au praticien</small>
+  <br>
+  <div class="row">
+  <a class="btn btn-primary btn-lg" href="#" role="button">Etre suivie</a>
+  <a class="btn btn-primary btn-lg" href="#" role="button">Découvrir</a>
+</div>
+   </div>
+   {% endblock content %}
