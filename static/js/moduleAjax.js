@@ -1,12 +1,38 @@
 $(function () {
-    alert(creation());
-    $.ajax({
+    affiche();
+    $("#add").click(function(){
+       form();
+    });
+   $("#show").click(function(){
+      affiche(); 
+   });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function affiche(){
+     $.ajax({
         url: 'sections/list',
         type: 'get',
-        dataType: 'json',
         success: function (data) {
             if (data == null) {
-                $('#module').append('<div class="liste" class="row"><div class="liste" class="row"><div class="text-center col-12 item border m-3 p-3"><h5>Section numéro 1</h5></div></div></div>');
+                form();
             }
             let mod = '';
             data.module.forEach(section => {
@@ -19,7 +45,7 @@ $(function () {
                 }
                 mod += '<button class="btn deleteBtn" data-id="' + section.id + '">Delete</button><button class="btn updateBtn" data-id="' + section.id + '">Update</button></div></div></div>';
             });
-            $('#module').append('<div class="liste" class="row">' + mod + '</div>');
+            $('#list').append(mod);
             $('.deleteBtn').each((i, elm) => {
                 $(elm).on("click", (e) => {
                     suppression($(elm));
@@ -32,7 +58,18 @@ $(function () {
             });
         }
     });
-});
+}
+
+function form(){
+    $.ajax({
+        url: `sections/form`,
+        type: 'get',
+        dataType: 'text',
+        success: function (data) {
+            $("#liste").prepend("<div class='text-center col-12 item shadow m-3 p-3'><h5 class='row'>Section</h5><div class='d-flex flex-column'>"+data+"<div></div>");
+        }
+    }); 
+}
 
 function creation() {
     $.ajax({
@@ -48,6 +85,7 @@ function creation() {
         }
     });
 }
+
 
 function suppression(sec) {
     sectionId = $(sec).data('id');
