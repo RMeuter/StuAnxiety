@@ -16,13 +16,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.conf import settings
-from django.urls import include, path#, handler404
+from django.urls import include, path
 from django.conf.urls.static import static
 
 from . import views
-
-#handler404="etherapie.views.handler404"
-
 
 
 urlpatterns = [
@@ -35,15 +32,12 @@ urlpatterns = [
     path('user/', include('user.urls')),
     path('module/', include('module.urls')),
 
-
     path("ckdeditor", include('ckeditor_uploader.urls'))
 ]
 
 if settings.DEBUG:
     import debug_toolbar
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
     urlpatterns = [
         path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    
-    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-    urlpatterns += staticfiles_urlpatterns()
+    ] + urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + staticfiles_urlpatterns()

@@ -77,32 +77,22 @@ CKEDITOR_CONFIGS = {
             {'name': 'colors', 'items': ['TextColor', 'BGColor']},
             {'name': 'tools', 'items': ['Maximize', 'ShowBlocks']},
             {'name': 'about', 'items': ['About']},
-            '/',  # put this to force next toolbar on new line
+            '/', 
             {'name': 'yourcustomtools', 'items': [
-                # put the name of your editor.ui.addButton here
                 'Preview',
                 'Maximize',
 
             ]},
         ],
-        'toolbar': 'YourCustomToolbarConfig',  # put selected toolbar config here
-        # 'toolbarGroups': [{ 'name': 'document', 'groups': [ 'mode', 'document', 'doctools' ] }],
-        # 'height': 291,
+        'toolbar': 'YourCustomToolbarConfig',  
         'class':'col-12',
-        # 'filebrowserWindowHeight': 725,
-        # 'filebrowserWindowWidth': 940,
-        # 'toolbarCanCollapse': True,
-        # 'mathJaxLib': '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML',
         'tabSpaces': 4,
         'extraPlugins': ','.join([
-            'uploadimage', # the upload image feature
-            # your extra plugins here
-            'div',
+            'uploadimage', 
             'autolink',
             'autoembed',
             'embedsemantic',
             'autogrow',
-            # 'devtools',
             'widget',
             'lineutils',
             'clipboard',
