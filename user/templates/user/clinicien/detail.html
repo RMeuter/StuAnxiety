@@ -1,0 +1,213 @@
+{% extends 'layouts/baseClient.html'%}
+{% load static%}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row border text-center m-3 p-3 rounded">
+        <div class="offset-4 col-4 offset-4">Dossier de {{monPatient.last_name}} {{monPatient.first_name}}
+            <br>
+            Information : <a href="mailto:{{monPatient.email}}">{{monPatient.email}}</a> 
+            {% if monPatient.telephone is not None %}, téléphone : {{monPatient.telephone}} {% endif %}
+            , Skype : <a href="skype:{{monPatient.skype}}?chat">Démarrer un chat</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4">
+            <div class="list-group" id="list-tab" role="tablist">
+                <a class="list-group-item list-group-item-action active" id="list-home-list" data-toggle="list" href="#list-home" role="tab" aria-controls="home">Message</a>
+                <a class="list-group-item list-group-item-action" id="list-activity-list" data-toggle="list" href="#list-activity" role="tab" aria-controls="activity">Analyse questionnaire</a>
+                <a class="list-group-item list-group-item-action" id="list-progress-list" data-toggle="list" href="#list-progress" role="tab" aria-controls="progress">Progression</a>
+                <a class="list-group-item list-group-item-action" id="list-change-list" data-toggle="list" href="#list-change" role="tab" aria-controls="change">Gestion et affectation</a>
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">
+                    <div class="row m-2">
+                        {% if monPatient.is_active %}
+                        <div class="alert alert-success col-12 text-center" role="alert">
+                              Votre patient est actif en ce moment
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning col-12 text-center" role="alert">
+                              Votre patient n'est pas disponible
+                        </div>
+                        {% endif %}
+                        <div class="col-12 shadow mt-2 rounded">
+                             <div class="row border p-2" data-spy="scroll" style="height: 400px; overflow:auto; max-height: 500px;">
+                            {% for message in dialogue %}
+                            <div class="col-12">
+                               {% if message.isClinicien is True %}
+                                <div class="bg-light offset-7 col-5 border rounded">
+                                  <h4>Vous :</h4><br><small>{{message.created_at}}</small><br>
+                                    <div class="bg-white">
+                                    <hr>
+                                     {{message.message}}
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class=" col-5 border rounded">
+                                  <h4>Votre Patient :</h4><br><small>{{message.created_at}}</small><br>
+                                    <div class="bg-light">
+                                    <hr>
+                                     {{message.message}}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% endfor %}
+                            </div>
+                            <form class="row" method="post">
+                                <div class="col-12 " >
+                                {{ messagerie }}
+                                   <div class="clearfix col-12">
+                                    <button class="col-5 btn btn-success float-left">Rafraichir</button>
+                                    <button class="col-5 btn btn-success float-right">Envoyer</button>
+                                   </div>
+                                </div>
+                                <div class="col-12">
+                                   <div class="col">
+                                   </div>
+                                   <div class="col">
+                                   </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="list-activity" role="tabpanel" aria-labelledby="list-activity-list">
+                    <div class="row">
+                        <div class="col-6">
+                             <div class="form-group">
+                                <table class="table table-striped">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col">Questionnaire effectuer</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                 {% for quest in AnalyseQuestQ %}
+                                  <tr>
+                                  <th scope="col"><a href="{% url 'questionnaire' quest.pk %}" target="_blank" role="button">{{quest.questionnaire__nom}}</a></th>
+                                </tr>
+                                 {% endfor %}
+                                </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                             <div class="form-group">
+                                <table class="table table-striped">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col">Module effectuer</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                  {% for module in AnalyseQuestM %}
+                                  <tr>
+                                      <th scope="row"><a href="{% url 'questionnaire' module.pk %}" target="_blank" role="button">{{module.module__nom}}</a></th>
+                                    </tr>
+                                 {% endfor %}
+                                  </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    <hr>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="list-progress" role="tabpanel" aria-labelledby="list-progress-list">Analyse et parcours utilisateur</div>
+        <div class="tab-pane fade" id="list-change" role="tabpanel" aria-labelledby="list-change-list">
+                <h4 class="col-12 text-center m-3">Ajouter un questionnaire</h4>
+                                 {% if affectationQuestionnaire is not None %}
+                 <table class="table table-striped">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col">Questionnaire déjà affecter</th>
+                                      <th>Stade du patient au questionnaire</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                  {% for quest in affectationQuestionnaire %}
+                                  <tr>
+                                      <th scope="row">{{quest.questionnaire__nom}}</th>
+                                      <th >{{quest.ordreAtteint}}</th>
+                                    </tr>
+                                 {% endfor %}
+                                  </tbody>
+                                </table>
+                                {% else %}
+                                <div class="text-warning">
+                                    Votre patient ne possède aucun questionnaire !
+                                </div>
+                                
+                                {% endif %}
+                <form class="col-12" method="post">
+                    {% csrf_token %}
+                    {{formAffectQuest|crispy}}
+                    <input type="submit" class="btn btn-primary">
+                </form>
+                
+                <hr class="m-5">
+                
+                <h4 class="col-12 text-center m-3">Création d'un rendez-vous :</h4>
+                <form class="col-12" method="post">
+                    {% csrf_token %}
+                    <div class="form-row">
+                    {{ agendaForm|crispy }}
+                    <input class="btn btn-success m-auto" type="submit">
+                    </div>
+                </form>
+                <hr class="m-5">
+                
+                {% if listOrdre is not None %}
+                <h4 class="col-12 text-center m-3">Sequence patient groupe semi-séquentielle</h4>
+                <div class="col-12 row text-center mt-5">    
+                   {% for ordre in listOrdre %}
+                        {% if not forloop.first %}
+                         {% ifchanged ordre.ordre %}<div class="col-1">
+                        <img style="width: 40px; height: 40px;" src="{% static 'icon/right.png' %}">
+                        </div>{% endifchanged %}
+                        {% endif %}
+                        <div class="border col-2">
+                        {% ifchanged ordre.ordre %}<h6 class="text-success m-3">Rang {{ ordre.ordre}}</h6>
+                        <ul class="list-group m-2">
+                       {% endifchanged %}
+                        <li class="list-group-item">
+                         <button type="button" class="close" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{ ordre.module__nom|truncatewords:80}}
+                        </li>
+                        {% ifchanged ordre.ordre %}</ul>{% endifchanged %}
+                        </div>
+                    {% empty %}
+                    <small class="text-warning">Votre patient n'a aucune séquence active</small>
+                   {% endfor %}
+                </div>
+                <h6 class="col-12 text-center m-3">Ajout de module dans une séquence:</h6>
+                <form class="offset-4 col-4 row" method="post">
+                    {% csrf_token %}
+                     <div class="form-inline">
+                    {{newOrdre|crispy}}
+                    </div>
+                    <input class="btn btn-success" type="submit">
+                </form>
+                <hr class="m-5">
+                {% endif %}
+                
+                <h4 class="col-12 text-center m-3">Fin thérapie</h4>
+                    <div class="form-row">
+                    <input class="btn btn-warning offset-4 col-4" type="button" value="Validez la fin de la thérapie">
+                    <small class="col-12 text-center m-3">En appuyant sur ce bouton votre patient aura finit sa thérapie et cela sera marqué par une date de fin</small>
+                    </div>
+                
+                </div>
+    </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script type="text/javascript" src="{% static 'js/graphique.js' %}"></script>
+{% endblock content %}

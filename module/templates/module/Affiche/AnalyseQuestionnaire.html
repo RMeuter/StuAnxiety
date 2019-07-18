@@ -1,0 +1,45 @@
+{% extends 'layouts/baseClient.html'%}
+{% block title %}{{Questionnaire.nom}}{% endblock title %}
+{% load static %}
+{% block content %}
+<div class="container">
+   {% if att.questionnaire is None %}
+    <h3 class="row m-3">{{att.questionnaire.nom}}</h3>
+   {% else %}
+    <h3 class="row m-3">{{att.module.nom}}</h3>
+   {% endif %}
+    <div style="overflow-y: scroll;" class="row m-3 p-1 border rounded">
+        {% for reponse in rep %}
+        {% ifchanged %}
+           <div class="col-12">
+           <h5>{{reponse.question__question}} </h5>
+           <small>{{reponse.created_at}} </small>
+        {% endifchanged %}
+            {{reponse.reponse__reponse}}
+        {% ifchanged reponse.question__question %}
+        </div>
+        {% endifchanged %}
+        {% endfor %}
+        
+        {% for reponse in repLibre %}
+        {% ifchanged %}
+           <div class="col-12">
+           <h5>{{reponse.question__question}} </h5>
+           <small>{{reponse.created_at}} </small>
+        {% endifchanged %}
+            {{reponse.reponseLibre}}
+        {% ifchanged reponse.question__question %}
+        </div>
+        {% endifchanged %}
+        {% endfor %}
+    </div> 
+    <div class="row">
+        <form method="post">
+            <div>
+                Variable 1 : 
+                    <input type="text">
+            </div>
+        </form>
+    </div>
+    </div>
+{% endblock content %}

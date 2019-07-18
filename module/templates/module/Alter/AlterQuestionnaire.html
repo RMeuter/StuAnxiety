@@ -1,0 +1,53 @@
+{% extends 'layouts/baseClient.html'%}
+{% load static%}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container-fluid">
+<div class="row">
+         <p class="col-12 m-3">
+            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#QuestForm" aria-expanded="false" aria-controls="QuestForm">
+                Créer un nouveau questionnaire
+              </button>
+            </p>
+            <div class="collapse col-12 mb-3" id="QuestForm">
+              <div class="card card-body">
+                <form method="post">
+               {% csrf_token %}
+                {{formQ|crispy}}
+                <small>*Champs obligatoire</small>
+                <input class="btn btn-primary float-right" type="submit">
+               </form>
+              </div>
+            </div>
+  <div class="col-6 m-3">
+      <div class="card card-body">
+            <div class="row">
+                {% for quesQuestion in questionnaire %}
+                   {% ifchanged %}
+                <div class="col-12">
+                   <div class="bg-light">
+                    <h3 class="col-12">{{quesQuestion.questionnaire__nom}}</h3>
+                    {% if quesQuestion.questionnaire__isJournal is True %}
+                    <small class="col-12"> Questionnaire repétitif</small>
+                    {% else %}
+                    <small class="col-12"> Questionnaire dépendant d'un module</small>
+                    {% endif %}
+                    <br>
+                    <button class="btn btn-primary">Modifier</button>
+                   </div>
+                   {% endifchanged %}
+                   <div class="col-12 mt-3"> Question numéro {{quesQuestion.ordre}} : {{quesQuestion.question}}
+                   <a href="#" role="button" class="btn btn-outline-primary float-right">Modifier la question</a>
+                     </div>
+                   {% if footloop.last %}
+                </div>
+                  <hr>
+                   {% endif %}
+                {% endfor %}
+            </div>
+      </div>
+
+  </div>
+</div>
+</div>
+{% endblock content %}

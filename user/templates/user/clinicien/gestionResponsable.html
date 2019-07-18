@@ -1,0 +1,53 @@
+{% extends 'layouts/baseClient.html'%}
+{% load static%}
+{% load crispy_forms_tags %}
+{% block content %}
+
+
+<div class="container">
+    <div class="row">
+
+        <h2 class="col-12 mt-3">Affectation clinicien patient :</h2>
+        <div class="col-12">
+            <div class="form-group">
+                <label for="clinicien">Clinicien</label>
+                <select class="form-control" id="clinicien">
+                   {% for clinicien in allClinicien %}
+                    <option value="{{clinicien.pk}}">{{clinicien.user.last_name}} {{clinicien.user.first_name}} avec {{clinicien.nbPatient}} </option>
+                   {% endfor %}
+                </select>
+            </div>
+        </div>
+        <form class="col-12 form-group" id="FormCli">
+        <!--#################Formulaire Ajax#########################!-->
+           
+        </form>
+        <!--##########################################!-->
+        <hr class="col-12">
+        <h2 class="col-12 mt-3">Affectation groupe patient :</h2>
+        <div class="col-12">
+            <div class="form-group">
+                <label for="groupe">Groupe</label>
+                <select class="form-control" id="groupe">
+                   {% for groupe in allGroupe %}
+                    <option value="{{groupe.pk}}">{{groupe.groupe.name}} {{groupe.categorie}} avec groupe.nbPatient </option>
+                   {% endfor %}
+                </select>
+            </div>
+        </div>
+        <form class="col-12 form-group" id="FormGroup">
+            
+        </form>
+        <!--##################################################!-->
+        <hr class="col-12">
+            <h2 class="col-12">Création de groupe</h2>
+        <div class="col-12 bg-light mb-3">
+            {{GroupFrom|crispy}}
+            <button class="btn btn-success">Créé</button>
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript" src="{% static 'js/GestionAjax.js' %}"></script>
+
+{% endblock content %}

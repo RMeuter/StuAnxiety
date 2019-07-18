@@ -3,11 +3,8 @@ body {
 
 }
 
-header {
+nav {
     background-color: aquamarine;
-    height: 50px;
-    font-size: 20px;
-    justify-content: center;
 }
 
 #bandeau {

@@ -1,0 +1,52 @@
+{% extends 'layouts/baseClient.html'%}
+{% block title %}Mes modules{% endblock title %}
+{% load static %}
+{% block content %}
+<style>
+    .test:hover{
+        box-shadow: inset 0px 0px 5px;
+    }
+
+</style>
+<div class="container" id="module">
+   <div class="row text-center">
+    <h2 class="col-12 m-5">Les modules du sommeil</h2>
+   </div>
+    
+        {% for module in modules %}
+        <div id="module{{module.pk}}" class="test border bg-light rounded row mb-4">
+
+            <img class="mx-auto img col-5 p-3 rounded" src="{{module.image.url}}" alt="{{module.image.name}}">
+            <div id="module{{module.pk}}" class=" align-self-center text-center col-7">
+                <h5>{{module.nom}}</h5>
+                <small class="text-break">
+                    {{module.desc}}
+                </small>
+
+
+            </div>
+        </div>
+        {% empty %}
+        <div class="row">
+        <h3 class="col-12 text-center">T'as finit les modules ! </h3>
+        <img id="gif" src="{% static 'gif/danceAvecMoi.gif' %}" class="col-12 figure-img img-fluid rounded" alt="dance"/>
+        </div>
+        <script>
+            $('#gif').click(function(){
+                $('#gif').attr('src',"{% static 'gif/nonArret.gif' %}");
+            });
+        </script>
+        {% endfor %}
+
+
+</div>
+<script>
+    $(function() {
+        {%for module in modules %}
+        $("#module" + {{module.pk}}).click((function() {
+            $(location).attr("href", {{module.pk}});
+        })); {% endfor %}
+    });
+
+</script>
+{% endblock content %}

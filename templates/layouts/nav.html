@@ -1,12 +1,40 @@
- <header class="p-2">No pain No gain
+ <nav class="navbar navbar-expand-lg navbar-light bg-success">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+    <a class="navbar-brand" href="#">StudAnxiety</a>
+    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+      <li class="nav-item active">
+        <a class="nav-link" href="{% url 'home' %}">Accueil <span class="sr-only">(current)</span></a>
+      </li>
        {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}" class="btn btn-primary" role="button">Se déconnecter ?</a>
-        <a href="{% url 'profil' %}" class="btn btn-primary" role="button">Mon profil</a>
+       {% if perms.user.parcours_Patient_Suivie %}
+       <li class="nav-item">
+        <a class="nav-link" href="{% url 'profil' %}">Profil patient</a>
+      </li>
+       {% endif %}
+       <li class="nav-item">
+        <a class="nav-link" href="{% url 'modules' %}">Module</a>
+      </li>
+      
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'logout' %}">Deconnexion</a>
+      </li>
         {% else %}
-        <a href="{% url 'register' %}" class="btn btn-primary" role="button">s'enregistrer ?</a>
-        <a href="{% url 'login' %}" class="btn btn-primary" role="button">Se connecter ?</a>
+       <li class="nav-item">
+        <a class="nav-link" href="{% url 'register' %}">Enregistrement</a>
+      </li>
+       <li class="nav-item">
+        <a class="nav-link" href="{% url 'login' %}">Connexion</a>
+      </li>
         {% endif %}
-        <a href="#" class="btn btn-primary" role="button">Je suis practicien
-        </a>
-        <a href="#" class="btn-primary btn" role="button">Accès modules direct</a>
-    </header>
+       {% if perms.user.parcours_Clinicien %}
+       <li class="nav-item">
+        <a class="nav-link" href="{% url 'clinicien' %}">Profil clinicien</a>
+      </li>
+       {% endif %}
+      
+    </ul>
+  </div>
+</nav>

@@ -1,0 +1,39 @@
+{% extends 'layouts/baseClient.html'%}
+{% block title %}{{module.nom}}{% endblock title %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <h3 class="row m-3">{{module.nom}}</h3>
+    <div class="progress row">
+  <div id="barre" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+</div>
+    <div id="module" class="row m-3 p-1 border rounded">
+    </div> 
+   
+
+    <div class="row mt-5" id="btn">
+        <button id="suivant" class="btn btn-success offset-9 col-3">suivant</button>
+    </div>
+    </div>
+
+<script type="text/javascript" src="{% static 'js/moduleAjax.js' %}"></script>
+<script>
+    
+    var ordre = {{ordre}};
+    var nombreSection = {{module.nbSection}};
+    affiche( {{module.pk}}, ordre, nombreSection);
+    $(function() {
+        $("#suivant").click(function() {
+            alert(ordre);
+            if (ordre < nombreSection) {
+                ordre++;
+                affiche({{module.pk}},ordre,nombreSection);
+            } else {
+                $('#suivant').text("Terminer");
+                $(location).attr("href", "{% url 'profil' %}");
+            }
+        });
+    });
+
+</script>
+{% endblock content %}

@@ -1,0 +1,38 @@
+{% extends 'layouts/baseClient.html'%}
+{% load static%}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="inputGroupSelect01">Type de sections</label>
+            </div>
+            <select class="custom-select" id="inputGroupSelect01">
+                <option value="1">Texte et image</option>
+                <option value="2">Question</option>
+                <option value="3">Vidéo</option>
+            </select>
+        </div>
+           
+           
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="inputGroupSelect01">Type de question</label>
+            </div>
+            <input type="radio" name="question" value="1" checked>
+            <input type="radio" name="question" value="2">
+            <input type="radio" name="question" value="3">
+            <input type="radio" name="question" value="4">
+            <input type="radio" name="question" value="5">
+            <input type="radio" name="question" value="6">
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+{% endblock content %}

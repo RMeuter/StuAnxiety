@@ -1,0 +1,54 @@
+{% extends 'layouts/baseClient.html'%}
+{% block title %}{{Questionnaire.nom}}{% endblock title %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <h3 class="row m-3">{{Questionnaire.nom}}</h3>
+    <div class="progress row">
+  <div id="barre" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: 30%"></div>
+</div>
+    <div class="row m-3 p-1 border rounded">
+        <form method='post' id="formQuest" class='col-12'>
+               <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <div id='question' class='form-group'>
+
+                </div>
+            <br/>
+            <button class='offset-3 col-6 btn btn-outline-dark' id='envoie'>Confirmer</button>
+        </form>
+    </div> 
+    </div>
+
+<script type="text/javascript" src="{% static 'js/questionnaireAjax.js' %}"></script>
+<script>
+    
+    var ordre = {{ordre}};
+    var nombreQuestion = {{Questionnaire.nbQuestion}};
+    var entre=false;
+    if (!entre){    
+    affiche( {{Questionnaire.pk}}, ordre, nombreQuestion);
+        entre=true;
+    } 
+/*
+    $(function() {
+    });
+        <button id="precedent" class="btn btn-success col-3">précédent</button>
+        $("#precedent").click(function() {
+            if (ordre > 1) {
+                ordre--;
+                affiche({{Questionnaire.pk}}, ordre);
+            }
+        });
+        $("#envoie").click(function() {
+
+            $("barre").attr("style", "width:40%");
+            if (ordre < nombreQuestion) {
+                ordre++;
+                affiche({{Questionnaire.pk}},ordre,nombreQuestion);
+            }
+        });
+        
+*/
+
+</script>
+{% endblock content %}

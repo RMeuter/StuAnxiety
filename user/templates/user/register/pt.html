@@ -2,22 +2,23 @@
 {% load crispy_forms_tags %}
 {% block title %}Enregistrement{% endblock title %}
    {% block content %}
-<div class="content-section">
-    <form method="post">
+<div class="container p-3">
+    <form method="post" enctype="multipart/form-data">
         <fielset class="form-group">
            {% csrf_token %}
             <legend class="border-bottom mb-4">Enregistement</legend>
-        {{ form|crispy }}
+        {{ formP|crispy }}
+        {{ formU|crispy }}
         </fielset>
         <div class="form-group">
         <button class="btn btn-outline-info" type="submit">Enregistrement</button>
         </div>
     </form>
+</div>
     <div class="border-top pt-3">
        <small class="text-muted">
            Déjà un compte ?
         <a class="ml-2" href="{url 'login'}">Enregistre toi</a>
        </small>
     </div>
-</div>
    {% endblock content %}
