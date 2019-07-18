@@ -79,22 +79,7 @@ def questionnaireAnalyse(request, pk):
     print(repLibre)
     return render(request, "module/Affiche/AnalyseQuestionnaire.html", {'enAtt':enAtt, "repLibre":repLibre, "rep":rep})
 
-
-class ResultatAjax(View):
-    def get(self, request, enAttente, question):
-        result=""
-        quest = Question.objects.get(pk=question)
-        att = enAttente.objects.get(pk=enAttente)
-        result+="<div class='col-12 bg-light'>{0}</div>".format(quest.question)
-        if quest.inputType < 4:
-            reps = Reponse.objects.filter(question=quest.pk)
-            result+="<br>Les reponses possibles aux questions :<ul>"
-            for rep in reps:
-                result+="<li>{0}</li>".format(rep.reponse)
-            result+="</ul>"
-            resultats= Resultats.objects.filter(enAttente=att.pk)
-            
-    
+  
 class Sectiondetail(View):
     """
     La vue regarde qu'elle type d'objet il va renvoyer il y a trois possibilités
@@ -322,7 +307,7 @@ def alterQuestionnaire(request):
             return redirect('AlterPart/Crea/Quest/{0}/1'.format(questionnaire.pk))
     else:
         formQ = QuestionnaireForm()
-    listeQuestionnaire = Question.objects.select_related("questionnaire").filter(questionnaire__isnull=False).order_by('questionnaire__id','ordre').values('questionnaire__nom','questionnaire__isJournal','question','ordre' )
+    listeQuestionnaire = Question.objects.select_related("questionnaire").filter(questionnaire__isnull=False).order_by('questionnaire__id','ordre').values('questionnaire__nom','questionnaire__isJournal','question','ordre')
     return render(request, "module/Alter/AlterQuestionnaire.html", {"formQ":formQ,"questionnaire":listeQuestionnaire})
     
     
@@ -347,19 +332,34 @@ def alterActivy(request, creation, typeActivity, pkActivity,ordreIn):
         elif typeActivity == "Mod":
             return render(request, "module/Alter/AlterActivity.html", {})
 
-class EnvoieDiffForm(View):
-    def get(self, request, typeF, formQuest=None, pkModif=None):
-        listFormQuest = [
-            {"inputType":1,"isMultipleRep":False},
-            {"inputType":2,"isMultipleRep":False},
-            {"inputType":3,"isMultipleRep":False},
-            {"inputType":1,"isMultipleRep":True},
-            {"inputType":2,"isMultipleRep":True},
-            {"inputType":4,"isMultipleRep":False},
-        ]
-        if pkModif != None :
-            if typeF == "Q":
-                formQ = QuestionForm()
-            elif typeF == "S":
-                formS = SectionForm()
+class EnvoieDifferentForm(View):
+    def get(self, request, typeF, formList, pkModif=None):
+        listFormQuest = {
+            "video":{"video":True, "text":False},
+            "text":{"video":False, "text":True},
+            "selection":{"inputType":1,"isMultipleRep":False},
+            "radio":{"inputType":2,"isMultipleRep":False},
+            "selectMultiple":{"inputType":3,"isMultipleRep":False},
+            "checkboxe":{"inputType":1,"isMultipleRep":True},
+            "reponseTextLibre":{"inputType":2,"isMultipleRep":True},
+            "reponseGradue":{"inputType":4,"isMultipleRep":False},
+        }
         
+        if pkModif == None :
+            if typeF == "S":
+                form = SectionForm(typeS=listFormQuest[formList])
+            elif typeF == "Q":
+                form = QuestionForm(typeQ=listFormQuest[formList])
+            else:
+                form=None
+        elif typeof(pkModif)==int :
+            if typeF == "S":
+                form = SectionForm(typeS=listFormQuest[formList], instance=pkModif)
+            elif typeF == "Q":
+                form = QuestionForm(typeQ=listFormQuest[formList], instance=pkModif)
+            else:
+                form=None
+        else :
+            form=None
+        return HttpResponse(form)
+            
