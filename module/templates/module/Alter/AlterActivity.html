@@ -4,42 +4,35 @@
 
 <div class="container">
     <div class="row">
-        <div class="input-group mb-3">
+        <div class="input-group mb-3" id="choixSection">
             <div class="input-group-prepend">
-                <label class="input-group-text" for="inputGroupSelect01">Type de sections</label>
+                <label class="input-group-text" for="SelectionPrincipal">Type de sections</label>
             </div>
-            <select class="custom-select" id="inputGroupSelect01">
-                <option value="1">Texte et image</option>
-                <option value="2">Question</option>
-                <option value="3">Vidéo</option>
+            <select class="custom-select" id="SelectionPrincipal">
+                <option value="0">Texte et image</option>
+                <option value="1">Question</option>
+                <option value="2">Vidéo</option>
             </select>
         </div>
         
-        <div class="input-group mb-3">
-            <div class="input-group-prepend">
-                <label class="input-group-text" for="inputGroupSelect01">Type de question</label>
-            </div>
-            <select class="custom-select" id="inputGroupSelect01">
-                <option value="1">Reponse libre</option>
-                <option value="2">Question avec une seul possibilité de réponse</option>
-                <option value="2">Question avec plusieurs possibilités de réponses</option>
-            </select>
-        </div>
-           
-           
-        <div class="input-group mb-3">
-            <div class="input-group-prepend">
-                <label class="input-group-text" for="inputGroupSelect01">Type de question</label>
-            </div>
-            Generate questionnaire
-            <input type="radio" name="question input selection" value="1" id="1" checked><label for="1">Question </label>
-            <input type="radio" name="question input selection" value="2" id="2" checked><label for="2">Question </label>
-            <input type="radio" name="question input selection" value="3" id="3" checked><label for="3"></label>
-            <input type="radio" name="question input selection" value="4" id="4" checked><label for="4"></label>
-            <input type="radio" name="question input selection" value="5" id="5" checked><label for="5"></label>
+        <div class="col-12" id="ZoneForm">
             
+        <div class="" id="choixQuestion">
+
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="inputGroupSelect01">Type de question</label>
+                </div>
+                <select class="custom-select" id="inputGroupSelect01">
+                    <option value="1">Reponse libre</option>
+                    <option value="2">Question avec une seul possibilité de réponse</option>
+                    <option value="2">Question avec plusieurs possibilités de réponses</option>
+                </select>
+            </div>
         </div>
 
+
+        </div>
     </div>
 </div>
 
