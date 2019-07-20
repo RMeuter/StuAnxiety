@@ -317,7 +317,7 @@ def alterQuestionnaire(request):
     
     
 
-def alterActivy(request, creation, typeActivity, pkActivity,ordreIn):
+def alterActivy(request, creation="Crea", typeActivity="Mod", pkActivity=1,ordreIn=1):
     """
     Modifie ou crée : question ou section
     """
@@ -333,32 +333,28 @@ def alterActivy(request, creation, typeActivity, pkActivity,ordreIn):
             return render(request, "module/Alter/AlterActivity.html", {})
 
 class EnvoieDifferentForm(View):
-    def get(self, request, typeF, formList, pkModif=None):
+    def get(self, request, formList, pkModif=None):
         listFormQuest = {
-            "video":{"video":True, "text":False},
-            "text":{"video":False, "text":True},
-            "selection":{"inputType":1,"isMultipleRep":False},
-            "radio":{"inputType":2,"isMultipleRep":False},
-            "selectMultiple":{"inputType":3,"isMultipleRep":False},
-            "checkboxe":{"inputType":1,"isMultipleRep":True},
-            "reponseTextLibre":{"inputType":2,"isMultipleRep":True},
-            "reponseGradue":{"inputType":4,"isMultipleRep":False},
+            "video":{"typeF":"S","video":True,"text":False},
+            "text":{"typeF":"S","video":False,"text":True},
+            "selection":{ "typeF":"Q","inputType":1,"isMultipleRep":False,"gradue":False},
+            "radio":{"typeF":"Q","inputType":2,"isMultipleRep":False,"gradue":False},
+            "selectMultiple":{"typeF":"Q","inputType":3,"isMultipleRep":False,"gradue":False},
+            "checkbox":{"typeF":"Q","inputType":1,"isMultipleRep":True,"gradue":False},
+            "reponseTextLibre":{"typeF":"Q","inputType":2,"isMultipleRep":True,"gradue":False},
+            "reponseGradue":{"typeF":"Q","inputType":4,"isMultipleRep":False,"gradue":True},
         }
         
         if pkModif == None :
-            if typeF == "S":
+            if listFormQuest[formList]["typeF"] == "S":
                 form = SectionForm(typeS=listFormQuest[formList])
-            elif typeF == "Q":
+            else:
                 form = QuestionForm(typeQ=listFormQuest[formList])
-            else:
-                form=None
         elif typeof(pkModif)==int :
-            if typeF == "S":
+            if listFormQuest[formList]["typeF"] == "S":
                 form = SectionForm(typeS=listFormQuest[formList], instance=pkModif)
-            elif typeF == "Q":
+            else :
                 form = QuestionForm(typeQ=listFormQuest[formList], instance=pkModif)
-            else:
-                form=None
         else :
             form=None
         return HttpResponse(form)
