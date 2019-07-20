@@ -66,7 +66,22 @@ class QuestionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.questionnaire = kwargs['questionnaire']
         del kwargs['module']
+        del kwargs['questionnaire']
         super(SectionForm, self).__init__(*args, **kwargs)
+        
+        listFormQuest = {
+            "selection":{"inputType":1,"isMultipleRep":False,"gradue":False},
+            "radio":{"inputType":2,"isMultipleRep":False,"gradue":False},
+            "selectMultiple":{"inputType":3,"isMultipleRep":False,"gradue":False},
+            "checkbox":{"inputType":1,"isMultipleRep":True,"gradue":False},
+            "reponseTextLibre":{"inputType":2,"isMultipleRep":True,"gradue":False},
+            "reponseGradue":{"inputType":4,"isMultipleRep":False,"gradue":True},
+        }
+        typeQ = listFormQuest[kwargs['typeQ']]
+        del kwargs['typeQ']
+        super(QuestionForm, self).__init__(*args, **kwargs)
+        if typeQ["inputType"]<4:
+            self.
 
 ##################### Sequence ########################
         

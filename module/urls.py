@@ -23,9 +23,11 @@ urlpatterns = [
     #####Creation
     path('AlterModules', views.alterModules, name='AlterModules'),
     path('AlterQuestionnaire', views.alterQuestionnaire, name='AlterQuestionnaire'),
+    path('AlterPart', views.alterActivy, name='AlterPart'),
     path('AlterPart/<str:creation>/<str:typeActivity>/<int:pkActivity>/<int:ordreIn>', views.alterActivy, name='AlterPart'),
     
-        
-    
+    #### Envoie et modification form
+    path('showCreateForm/<str:formList>', views.EnvoieDifferentForm, name='callDiffFormForQuestion'),
+    path('showCreateForm/<str:formList>/<int:pkModif>', views.EnvoieDifferentForm, name='callDiffFormForQuestion'),
     
               ]
