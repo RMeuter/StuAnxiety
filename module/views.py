@@ -334,27 +334,16 @@ def alterActivy(request, creation="Crea", typeActivity="Mod", pkActivity=1,ordre
 
 class EnvoieDifferentForm(View):
     def get(self, request, formList, pkModif=None):
-        listFormQuest = {
-            "video":{"typeF":"S","video":True,"text":False},
-            "text":{"typeF":"S","video":False,"text":True},
-            "selection":{ "typeF":"Q","inputType":1,"isMultipleRep":False,"gradue":False},
-            "radio":{"typeF":"Q","inputType":2,"isMultipleRep":False,"gradue":False},
-            "selectMultiple":{"typeF":"Q","inputType":3,"isMultipleRep":False,"gradue":False},
-            "checkbox":{"typeF":"Q","inputType":1,"isMultipleRep":True,"gradue":False},
-            "reponseTextLibre":{"typeF":"Q","inputType":2,"isMultipleRep":True,"gradue":False},
-            "reponseGradue":{"typeF":"Q","inputType":4,"isMultipleRep":False,"gradue":True},
-        }
-        
         if pkModif == None :
             if listFormQuest[formList]["typeF"] == "S":
                 form = SectionForm(typeS=listFormQuest[formList])
             else:
-                form = QuestionForm(typeQ=listFormQuest[formList])
+                form = QuestionForm(typeQ=formList)
         elif typeof(pkModif)==int :
             if listFormQuest[formList]["typeF"] == "S":
                 form = SectionForm(typeS=listFormQuest[formList], instance=pkModif)
             else :
-                form = QuestionForm(typeQ=listFormQuest[formList], instance=pkModif)
+                form = QuestionForm(typeQ=formList,instance=pkModif)
         else :
             form=None
         return HttpResponse(form)
