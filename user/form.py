@@ -1,45 +1,73 @@
 #https://metrogeek.fr/django-creer-formulaire/
 from django import forms
-from django.forms.widgets import TextInput, NumberInput
+from django.forms.widgets import TextInput
+
 from .models import Population, Patient, Clinicien, Message, Agenda, enAttente
-from module.models import Questionnaire
 from django.contrib.auth.models import User 
 from django.contrib.auth.forms import UserCreationForm
+
 from django.utils import timezone
 
-################## Enregistrement (register view)
+#################################################################################################
+################################### Enregistrement (register view)###############################
 
+########################################## User #############################################
 class UserRegisterFrom(UserCreationForm):
+    """
+    Intégration d'un utilisateur lambda (clinicien ou patient)
+    """
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name' ,'email', 'password1', 'password2']
-        labels = {'username': "Nom d'utilisateur du site", 'email': "Votre e-mail :", 'password1': "Mot de passe", 'password2': "Confirmer votre mot de passe :"}
+        labels = {
+            'username': "Nom d'utilisateur du site", 
+            'email': "Votre e-mail :", 
+            'password1': "Mot de passe", 
+            'password2': "Confirmer votre mot de passe :"
+        }
         
+########################################## Patient #############################################
 class PatientRegisterFrom(forms.ModelForm):
     class Meta :
         model = Patient
-        fields = ["universite","parcours", 'telephone',"skype" ]
-        labels ={"universite" : "Votre université : ","parcours" : "Dans quel parcours êtes vous ?", 'telephone':"Votre numéro de téléphone :",'skype':"Veuillez donner votre nom d'utilisateur skype :"}
+        fields = ["universite","parcours", 'telephone',"skype"]
+        labels ={
+            "universite" : "Votre université : ",
+            "parcours" : "Dans quel parcours êtes vous ?",
+            'telephone':"Votre numéro de téléphone :",
+            'skype':"Veuillez donner votre nom d'utilisateur skype :"
+        }
         widgets = {
             'telephone': TextInput(attrs={'type': 'tel', 'class':"form-control", 'placeholder':"Exemple : 0610101010"},),#"pattern":"#^0[1-7][0-9]{8}$#"
         }
 
+########################################## Clincien #############################################
 class ClinicienRegisterFrom(forms.ModelForm):
     class Meta :
         model = Clinicien
-        fields = ["photoProfil","responsableEquipe" ]
-        labels ={"photoProfil" : "Votre photo pour acquérir la confiance de vos patient ","responsableEquipe" : "Votre responsable en d'équipe :"}
+        fields = ["photoProfil"]
+        labels ={
+            "photoProfil" : "Votre photo pour acquérir la confiance de vos patient "
+        }
 
 
 
+#################################################################################################
 ##################################### Interaction cli et patient ##############################
+
+
+########################################## Agenda #############################################
         
 class AgendaForm(forms.ModelForm):
     debut = forms.DateTimeField(initial = timezone.now(), widget=TextInput(attrs={'type': 'datetime-local', 'class':"form-control"}))
     class Meta:
         model=Agenda
         fields=['objet', 'debut', 'duree']
-        labels = {'objet': 'Sujet de votre demande','debut': 'Choissiez un moment :', 'duree':'Temps en heure et minutes'}
+        labels = {
+            'objet': 'Sujet de votre demande',
+            'debut': 'Choissiez un moment :',
+            'duree':'Temps en heure et minutes'
+        }
         widgets = {
             'objet': TextInput(attrs={'type': 'text', 'class':"form-control"}),
             'duree': TextInput(attrs={'class':"form-control", "type":"time"}),
@@ -61,12 +89,18 @@ class AgendaForm(forms.ModelForm):
             instance.save()
         return instance
 
+########################################## Reprise de Message #############################################
     
 class MessagerieForm(forms.ModelForm):
+    """
+    Voir pour un plug in de messagerie ! 
+    """
     class Meta:
         model=Message
         fields=['message']
-        labels={"message":""}
+        labels={
+            "message":""
+        }
         widgets={
             'message': forms.Textarea(attrs={'class':"form-control"}),
         }
@@ -76,18 +110,21 @@ class MessagerieForm(forms.ModelForm):
         del kwargs['patient']
         del kwargs['clinicien']
         super(MessagerieForm, self).__init__(*args, **kwargs)
-        
+
+##########################################  enAttente #############################################
 class AjoutQuestForm(forms.ModelForm):
+    """
+    Ajout d'un questionnaire au patient
+    """
     isRepetition=forms.BooleanField(required=False)
-    questionnaire=forms.ModelChoiceField(queryset=Questionnaire.objects.filter(isJournal=False), to_field_name="pk", widget=forms.Select(attrs={'class':'form-control'}), initial=0, required=True)
+    Module=forms.ModelChoiceField(queryset=Module.objects.filter(isJournal=False, isQuestionnaireOnly=True), to_field_name="pk", widget=forms.Select(attrs={'class':'form-control'}), initial=0, required=True)
     class Meta:
         model=enAttente
-        fields=['questionnaire', 'repetition', 'dateVisible']
+        fields=['Module', 'repetition', 'dateVisible']
     def __init__(self, *args, **kwargs):
         self.patient=kwargs['patient']
         del kwargs['patient']
         super(AjoutQuestForm, self).__init__(*args, **kwargs)
-        
     def save(self, commit=True):
         instance = super(AjoutQuestForm, self).save(commit=False)
         instance.patient = Patient.objects.get(pk=self.patient)
@@ -96,6 +133,7 @@ class AjoutQuestForm(forms.ModelForm):
         return instance
 ###################################### Gestion Clinicien, groupe, ################################
         
+########################################## clinicien #############################################
 class PatientClinicienForm(forms.ModelForm):
     clinicien_du_patient=forms.ModelMultipleChoiceField(queryset=Patient.objects.all().order_by('clinicienACharge'), to_field_name="pk", widget=forms.SelectMultiple(attrs={'class':'form-control'}), initial=0, required=True)
     class Meta:
@@ -104,6 +142,7 @@ class PatientClinicienForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PatientClinicienForm, self).__init__(*args, **kwargs)
 
+########################################## Population #############################################
 class PatientGroupForm(forms.ModelForm):
     patient=forms.ModelMultipleChoiceField(queryset=Patient.objects.all().order_by('groupePatients'), to_field_name="pk", widget=forms.SelectMultiple(attrs={'class':'form-control'}), initial=0, required=True)
     class Meta:
@@ -112,9 +151,14 @@ class PatientGroupForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PatientGroupForm, self).__init__(*args, **kwargs)
 
+########################################## Population #############################################
 class GroupCreationForm(forms.ModelForm):
     class Meta:
         model = Population
         fields = ['categorie',  "sequence", "lieu"]
-        labels = {'categorie': 'Catégorie', "sequence": "Parcours utilisateur à definir", "lieu": "Population issue de"}
+        labels = {
+            'categorie': 'Catégorie', 
+            "sequence": "Parcours utilisateur à definir",
+            "lieu": "Population issue de"
+        }
         

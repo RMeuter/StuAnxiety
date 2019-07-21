@@ -1,7 +1,7 @@
 #https://openclassrooms.com/fr/courses/1871271-developpez-votre-site-web-avec-le-framework-django/1873767-les-utilisateurs
 from django.db import models
 from django.contrib.auth.models import User, Group
-from module.models import Reponse, Module, Section, Questionnaire, Sequence, Question
+from module.models import Reponse, Module, Section, Sequence, Question
 from django.utils import timezone
 from datetime import datetime
 
@@ -14,10 +14,6 @@ class variableEtude (models.Model):
     
 ####################################### Groupe et user ####################################### 
 
-class Responsable(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    isClinicien = models.BooleanField(default=False)
-    
 
 class Population(models.Model):
     """
@@ -26,10 +22,11 @@ class Population(models.Model):
     """
     CATEGORIE = [(1, 'Equipe de clinicien'), (2, 'Groupe semi-séquentiel'),(3, 'Groupe séquentiel'), (4, 'Groupe non séquentiel'),  (5, 'Groupe non suivie')]
     categorie = models.IntegerField(choices=CATEGORIE)
+    
     groupe = models.OneToOneField(Group, on_delete=models.CASCADE)
     lieu = models.CharField(max_length=200, blank=True, null=True)
-    responsable = models.ForeignKey(Responsable,on_delete=models.SET_NULL,null=True, blank=True,related_name = 'a_pour_responsable')
     sequence = models.ForeignKey(Sequence,on_delete=models.SET_NULL,null=True, blank=True,related_name = 'admet_une_sequence_tel_que')
+    
     def __str__(self):
         return "Groupe : {0} au nom de {1}".format(self.categorie, self.groupe.name)
     class Meta :
@@ -50,9 +47,12 @@ class Clinicien(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     photoProfil = models.ImageField(upload_to="./Media/photosProfilsCliniciens/",default='CliniciensPics/image.png')
     equipe  = models.ForeignKey(Population, on_delete=models.SET_NULL,null=True, blank=True, related_name = 'integre')
-    responsableEquipe  = models.ForeignKey(Responsable, on_delete=models.SET_NULL,null=True, blank=True, related_name = 'est_responsable_de')
+
     class Meta :
         ordering =["equipe"]
+        permissions = (
+            ('Clinicien_Responsable', "Responsable d'équipe clinicienne"), # Peut voir les clinicien de son équipe
+        )
     def __str__(self):
         return "Psychologue : {0} {1}".format(self.user.first_name,self.user.last_name)
   
@@ -70,6 +70,7 @@ class Patient(models.Model):
     clinicienACharge  = models.ForeignKey(Clinicien, on_delete=models.CASCADE, null=True,blank=True, related_name = 'clinicien_du_patient')
     sequence = models.ForeignKey(Sequence,on_delete=models.SET_NULL,null=True, blank=True)
     #----------------------------Model propre au patient-------------------------------------------
+    
     lastScore = models.IntegerField(blank=True, null=True)
     NoSeeMsgQuantity = models.IntegerField(default=0)
     universite = models.CharField(max_length=200)#Plus pour des études sociaulogique
@@ -78,12 +79,13 @@ class Patient(models.Model):
     skype = models.CharField(max_length=20, blank=True, null=True)
     point = models.IntegerField(default=0)
     dateFinTherapie = models.DateField(blank=True, null=True) 
+    
     #----------------------------Model en ManyToMany-----------------------------------------------------
-    questionnaire = models.ManyToManyField(Questionnaire, through="Parcours" )
+
     section = models.ManyToManyField(Section, through="Parcours")
     agenda = models.ManyToManyField(Clinicien, through="Agenda",related_name = 'Agenda')
-    variable = models.ManyToManyField(variableEtude, through="Dossier")
     message = models.ManyToManyField(Clinicien, through="Message",related_name = 'Message')
+    variable = models.ManyToManyField(variableEtude, through="Dossier")
     class Meta :
         ordering =["clinicienACharge","groupePatients"]
     def __str__(self):
@@ -132,9 +134,7 @@ class Parcours (models.Model):
     Permettra de définir la loi d'un temps idéal à l'avenir !
     """
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name = 'patient_parcours')
-    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, blank=True, null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, blank=True, null=True)
-    entretien = models.ForeignKey(Clinicien, on_delete=models.CASCADE, blank=True, null=True, related_name = 'entretien')
     debut = models.DateTimeField(auto_now_add=True)
     duree = models.DurationField(null=True)#Peut etre null s'il n'est pas vraiment actif pendant 5 heures. 
     class Meta :
@@ -150,7 +150,7 @@ class enAttente (models.Model):
     """
     reponse = models.ManyToManyField(Reponse, through="Resultat")
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    questionnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE, blank=True, null=True)
+    
     ordreAtteint = models.SmallIntegerField(default=1)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, blank=True, null=True)
     repetition = models.PositiveSmallIntegerField(blank=True, null=True)
@@ -159,16 +159,7 @@ class enAttente (models.Model):
     isAnalyse = models.BooleanField(default=False)
     class Meta :
         ordering =["patient", "forClinicien","dateVisible"]
-    def list_module_disponible():
-        pass
-    def list_questionnaire_disponible():
-        pass
-    def list_questionnaire_disponible_pour_clinicien():
-        pass
     def __str__(self):
-        if self.questionnaire !=None:
-            return "en attente pour {0} avec {1}".format(self.patient, self.questionnaire)
-        else:
             return "en attente pour {0} avec {1}".format(self.patient, self.module)
     
 
