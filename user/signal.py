@@ -15,6 +15,7 @@ from django.contrib.auth.decorators import permission_required
 S'entrainer : https://openclassrooms.com/fr/courses/1871271-developpez-votre-site-web-avec-le-framework-django/1873451-les-signaux-et-middlewares
 """
 
+########################################## Affectation auto sequence pour groupe 2 ##################################
 @receiver(post_save, sender=Patient)
 def Affecte_sequence(sender,created, instance, **kwargs):
     print("fonction affect sequence")
@@ -28,7 +29,8 @@ def Affecte_sequence(sender,created, instance, **kwargs):
         elif instance.groupePatients.categorie != 2 and instance.sequence != None :
             print("passe 2")
             instance.sequence.delete()
-
+            
+########################################## Affectation de permission ##################################
     
 @receiver(post_save, sender=Population)
 def Affectation_Permission_Groupe(sender,created, instance, **kwargs):
@@ -70,12 +72,12 @@ def Affectation_Permission_Groupe(sender,created, instance, **kwargs):
             permission = Permission.objects.get(content_type=content_type, codename='Sequence_Groupal')
             instance.groupe.permissions.add(permission)
 
-"""
+
 @receiver(pre_save, sender=enAttente)
 def verifie_double_et_impossibilite_enAttente(sender, instance, *args, **kwargs):
-    if enAttente.objects.filter(patient=instance.patient, module=instance.module, questionnaire=instance.questionnaire).exists():
-        enAttente.objects.filter(patient=instance.patient, module=instance.module, questionnaire=instance.questionnaire).delete()
-"""
+    if enAttente.objects.filter(patient=instance.patient, module=instance.module, forClinicien=False).exists():
+        enAttente.objects.filter(patient=instance.patient, module=instance.module, forClinicien=False).delete()
+############################### Integration de groupe pour les permission#####################################
 
 @receiver(post_save, sender=Patient)
 def integre_group(sender,created, instance, *args, **kwargs):
