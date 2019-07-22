@@ -33,24 +33,17 @@ def patient(request):
     Gérer les messages par fonction ajax !
     Faire le questionnaire sur une autre page.
     Liste de requete :
-    - Enattente -> questionnaire 
     - Enattente -> module 
     - Messagerie -> message -> Ajax
     - Notification -> agenda  -> Ajax
     '''
     patient = request.user.patient
     ####### Barre de progression 
-    ModuleenAttente = enAttente.objects.filter(patient=patient, questionnaire=None,dateVisible__lte=timezone.now()).values('ordreAtteint', 'module__nom', 'module__nbSection', 'module__pk')
+    ModuleenAttente = enAttente.objects.filter(patient=patient, dateVisible__lte=timezone.now()).values('ordreAtteint', 'module__nom', 'module__nbSection', 'module__pk')
     if not ModuleenAttente.exists():
         ModuleenAttente=None
     else: 
         ModuleenAttente = ModuleenAttente.annotate(progress=ExpressionWrapper((100*F('ordreAtteint'))/F('module__nbSection'),output_field=IntegerField()))
-        
-    QuestionnaireenAttente = enAttente.objects.filter(patient=patient, module=None, dateVisible__lte=timezone.now()).values('ordreAtteint', 'questionnaire__nom', 'questionnaire__nbQuestion', 'questionnaire__pk')
-    if not QuestionnaireenAttente.exists():
-        QuestionnaireenAttente=None
-    else :
-        QuestionnaireenAttente.annotate(progress=ExpressionWrapper((F('ordreAtteint')*100)/F('questionnaire__nbQuestion'),output_field=IntegerField()))
     ####### Interation message agenda
     messages = Message.objects.filter(patient=patient, clinicien=patient.clinicienACharge).values("message","created_at", "isClinicien")
     print(messages)
@@ -58,7 +51,6 @@ def patient(request):
     print(rdv)
     return render(request, "user/patient.html", {
         "progressModule": ModuleenAttente, 
-        "progressQuestionnaire":QuestionnaireenAttente,
         "messagerie":MessagerieForm(patient=patient,clinicien=request.user.patient.clinicienACharge),
         "dialogue":messages,
        "rendezvous":rdv
@@ -156,22 +148,20 @@ def detail(request, patient):
     messages = Message.objects.filter(patient__id=monPatient["patient__pk"], clinicien=request.user.clinicien).values("message","created_at", "isClinicien")
     
     ############# Analyse
-    AnalyseQuestM = enAttente.objects.filter(patient=monPatient["patient__pk"],questionnaire=None, forClinicien=True).values("module__pk", "module__nom","pk")
+    AnalyseQuestM = enAttente.objects.filter(patient=monPatient["patient__pk"], forClinicien=True).values("module__pk", "module__nom","pk")
     print(AnalyseQuestM)
-    AnalyseQuestQ = enAttente.objects.filter(patient=monPatient["patient__pk"],module=None, forClinicien=True).values("questionnaire__nom", "questionnaire__pk", "pk") 
-    print(AnalyseQuestQ)
     
     ############# Gestion
-    affectationQuestionnaire = enAttente.objects.filter(patient=monPatient["patient__pk"],module=None, forClinicien=False).values("questionnaire__nom", "questionnaire__pk", "ordreAtteint")
-    if not affectationQuestionnaire.exists():
-        affectationQuestionnaire=None
+    #affectationQuestionnaire = enAttente.objects.filter(patient=monPatient["patient__pk"],module=None, forClinicien=False).values("questionnaire__nom", "questionnaire__pk", "ordreAtteint")
+    #if not affectationQuestionnaire.exists():
+    affectationQuestionnaire=None
     
+       #"affectationQuestionnaire":affectationQuestionnaire,
     return render(request, "user/clinicien/detail.html", {
         "monPatient":monPatient, 
-        "AnalyseQuestQ":AnalyseQuestQ,
         "AnalyseQuestM":AnalyseQuestM,
         "formAffectQuest":formAffectQuest, 
-       "affectationQuestionnaire":affectationQuestionnaire, "messagerie":MessagerieForm(patient=monPatient["patient__pk"],clinicien=request.user.clinicien),
+        "messagerie":MessagerieForm(patient=monPatient["patient__pk"],clinicien=request.user.clinicien),
         "dialogue":messages,
         "agendaForm":formA,
         'newOrdre':formS,
