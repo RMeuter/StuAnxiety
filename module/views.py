@@ -14,15 +14,16 @@ from django.views.generic import View, CreateView
 # https://forum.alsacreations.com/topic-1-76028-1-Pdf-a-afficher-sur-page-Web.html
 
 
-#####################################################################################################################################
 from django.utils import timezone
 
+#####################################################################################################################################
 def module(request, pk):
     """
     Verifier s'il correspond à celui e liste d'attente
     if in list attente -> possible -> et utiliser l'ordre pour l'appel
     else -> redirect list module
     """
+    ##################################### Parcours sequentielle/ semi sequentielle
     if request.user.has_perm("module.Sequence_Individuel") or request.user.has_perm("module.Sequence_Groupal"):
         if request.user.has_perm("module.Sequence_Individuel"):
             pkSequence=request.user.patient.sequence.pk
@@ -30,34 +31,18 @@ def module(request, pk):
             pkSequence=request.user.patient.groupePatients.sequence.pk
         if  Ordre.objects.filter(sequence=pkSequence).exists():
             get_object_or_404(enAttente, module=pk, patient=request.user.patient, forClinicien=False, dateVisible__lte=timezone.now())
+            
+    ##################################### Tous parcours !-> Ordre
     ordre = enAttente.objects.filter(module_id=pk, patient=request.user.patient,forClinicien=False,dateVisible__lte=timezone.now()).values("ordreAtteint")
     if ordre.exists():
         ordre = ordre[0]['ordreAtteint']
     else:
         ordre=1
+    ##################################### Tous parcours !-> Module existant
     mod =get_object_or_404(Module, pk=pk, isVisible=True, nbSection__gt=0)
     return render(request,"module/Affiche/Module.html", {"module" : mod, "ordre":ordre})
 
 
-def questionnaire(request, pk, typeQ="Q", patient=None):
-    """
-    Deux types : 
-        - M pour question issue d'un module 
-        - Q pour question issue d'un questionnaire 
-    """
-    
-    if typeQ == "M" and request.user.has_perm("user.Parcours_Clinicien"):
-        questionnaire = get_object_or_404(Module, pk=pk)
-        
-    questionnaire = get_object_or_404(Questionnaire, pk=pk)
-    if request.user.has_perm("user.parcours_Patient_Suivie"):
-        ordre = enAttente.objects.filter(questionnaire_id=pk, patient=request.user.patient,forClinicien=False,dateVisible__lte=timezone.now()).values("ordreAtteint")
-    if ordre.exists():
-        ordre = ordre[0]['ordreAtteint']
-        #request.session['enAttente']="{0}".format(ordre[0]['pk'])
-    else:
-        ordre=1
-    return render(request, "module/Affiche/Questionnaire.html", {'Questionnaire':questionnaire, "ordre":ordre})
 
 ##############################
 def questionnaireAnalyse(request, pk):
@@ -65,20 +50,19 @@ def questionnaireAnalyse(request, pk):
     Deux types : 
         - M pour question issue d'un module 
         - Q pour question issue d'un questionnaire 
-    
-    if typeQ == "M" and request.user.has_perm("user.Parcours_Clinicien"):
-        questionnaire = get_object_or_404(Module, pk=pk)
-    else: 
-        questionnaire = get_object_or_404(Questionnaire, pk=pk)
-    ordre = enAttente.objects.filter(questionnaire_id=pk, patient=request.user.patient,forClinicien=False,dateVisible__lte=timezone.now()).values("ordreAtteint")
     """
+    
     enAtt = enAttente.objects.get(pk=pk)
+    ########################################### Recuperation des questions qui sont enAttente pour le clinicien
     rep = Resultat.objects.filter(enAttente=enAtt, reponse__isnull=False).values("question__question", "reponse__reponse","created_at").order_by("question")
-    print(rep)
     repLibre = Resultat.objects.filter(enAttente=enAtt, reponseLibre__isnull=False).values("question__question", "reponseLibre", "created_at")
+    
+    print(rep)
     print(repLibre)
     return render(request, "module/Affiche/AnalyseQuestionnaire.html", {'enAtt':enAtt, "repLibre":repLibre, "rep":rep})
 
+
+################################################### Appel Ajax de la section
   
 class Sectiondetail(View):
     """
@@ -88,64 +72,72 @@ class Sectiondetail(View):
         """
         on intégre enAttente avec l'histoire d'ordre
         """
-        #######Existance
+        ######################### Existance
         section = get_object_or_404(Section, ordre=ordre, module=module)
+        
         ####### Variable
         patient=request.user.patient
         nb_Section = Module.objects.get(pk=module).nbSection
-        # Gestion tous patient ici
-        if request.user.has_perm("user.parcours_Patient_Suivie"):
-            enAtt = enAttente.objects.update_or_create(patient=patient,module_id=module,ordreAtteint=ordre)
-            print(enAtt[0].pk)
-            request.session['enAttente']=enAtt[0].pk
-            
         
-        # Gestion sequence patient ici
-        if nb_Section==ordre:
-            print("La fin est proche")
-            try:
-                enAttente.objects.update_or_create(module_id=module,patient=patient,ordreAtteint=ordre,forClinicien=True)
-            except enAttente.DoesNotExist:
-                print('ça passe quoi !')
-            if not enAttente.objects.filter(patient=patient, forClinicien=False).exclude(module__isnull=True).exists():
-                print("Verifie s'il n'existe plus encore des modules dans enAttente")
-                if request.user.has_perm("module.Sequence_Individuel"):
-                    print("premier passage indiv")
-                    pkSequence=request.user.patient.sequence.pk
-                elif request.user.has_perm("module.Sequence_Groupal"):
-                    print("passage groupe")
-                    pkSequence=request.user.patient.groupePatients.sequence.pk
-                if request.user.has_perm("module.Sequence_Individuel") or request.user.has_perm("module.Sequence_Groupal"):
-                    print("passage réordonne")
-                    try:
-                        ordreObj = Ordre.objects.get(module=module, sequence=pkSequence)
-                        print(ordreObj)
-                        if Ordre.objects.filter(sequence=pkSequence, ordre=(ordreObj.ordre+1)).exists():
-                            print("Ajout des modules à enAttente")
-                            """
-                            verifie l'existance du module d'ordre + 1
-                            """
-                            position=ordreObj.ordre+1
-                            listeAdd = Ordre.objects.select_related("module").filter(sequence=pkSequence, ordre=position)
-                            for moduleAdd in listeAdd :
-                                enAttente.objects.create(patient=patient, module=moduleAdd.module,ordreAtteint=0)
-                        else :
-                            """
-                            Ce else est archi important car il détermine la fin de la thérapie si ordre +1 n'existe pas pour les groupe
-                            séquentielle
-                            pour les semi séquentielle eux on surpprime toutes leur sequences et il auront accès à tous !
-                            Voir
-                            """
-                            if request.user.has_perm("module.Sequence_Individuel"):
-                                print("supprimer l'ordre d'un patient semi-sequentielle !")
-                                Sequence.objects.get(pk=pkSequence).possede.clear()
-
-                    except Ordre.DoesNotExist:
-                        print("Déplacement des modules ! ")
+        #################################### Recuperation de l'ordre selon leur suivie
+        if request.user.has_perm("user.parcours_Patient_Suivie") or request.user.has_perm("user.parcours_Patient_Non_Suivie"):
+            enAtt = enAttente.objects.get_or_create(patient=patient,module_id=module,forClinicien=False)
+            enAtt.ordreAtteint=ordre
+            enAtt.save()
+            request.session['enAttente']=enAtt[0].pk
+            print(enAtt.pk)
             
+            ##################################### Verification si le module est finit
+            
+            if nb_Section==ordre:
+                print("La fin est proche")
+                enAtt.forClinicien=True
+                enAtt.save()
+                
+                ####################### Verifie l'existance de module en attente encore
+                if not enAttente.objects.filter(patient=patient,isQuestionnaireOnly=False, forClinicien=False).exists():
+                    print("Verifie s'il n'existe plus encore des modules dans enAttente")
+                    
+                    ###################################### Diff de suivie
+                    if request.user.has_perm("module.Sequence_Individuel"):
+                        print("premier passage indiv")
+                        pkSequence=request.user.patient.sequence.pk
+                    elif request.user.has_perm("module.Sequence_Groupal"):
+                        print("passage groupe")
+                        pkSequence=request.user.patient.groupePatients.sequence.pk
+                    try :
+                        if pkSequence :
+                            print("passage réordonne")
+                            try:
+                                ######### On verifier que l'ordre +1 existe !
+                                ordreObj = Ordre.objects.get(module=module, sequence=pkSequence)
+                                print(ordreObj)
+                                if Ordre.objects.filter(sequence=pkSequence, ordre=(ordreObj.ordre+1)).exists():
+                                    print("Ajout des modules à enAttente")
+                                    """
+                                    verifie l'existance du module d'ordre + 1
+                                    """
+                                    position=ordreObj.ordre+1
+                                    listeAdd = Ordre.objects.select_related("module").filter(sequence=pkSequence, ordre=position)
+                                    for moduleAdd in listeAdd :
+                                        enAttente.objects.create(patient=patient, module=moduleAdd.module,ordreAtteint=0)
+                                else :
+                                    """
+                                    Ce else est archi important car il détermine la fin de la thérapie si ordre +1 n'existe pas pour les groupe
+                                    séquentielle
+                                    pour les semi séquentielle eux on surpprime toutes leur sequences et il auront accès à tous !
+                                    Voir
+                                    """
+                                    if request.user.has_perm("module.Sequence_Individuel"):
+                                        print("supprimer l'ordre d'un patient semi-sequentielle !")
+                                        Sequence.objects.get(pk=pkSequence).possede.clear()
+                            except Ordre.DoesNotExist:
+                                print("Bug dans la matrice !")
+                    except NameError:
+                        print("Ne suis pas une séquence !")
+                        
         #Integration du module ici
         if section.question != None and request.user.has_perm("user.parcours_Patient_Suivie"):
-            #print("Numero question : ",section.question.pk," Multiple reponses ?",section.question.isMultipleRep," nom de la question ", section.question.question, "Type d'input :",section.question.inputType)
             formQ = SondageForm(question = section.question, enAttente=request.session["enAttente"])
             return JsonResponse({"question":"{0}".format(formQ)})
         elif section.question != None and not request.user.has_perm("user.parcours_Patient_Suivie"):
@@ -155,31 +147,7 @@ class Sectiondetail(View):
         else :
             return JsonResponse({"text":section.text})
 
-class Questiondetail(View):
-    """
-    La vue regarde qu'elle type d'objet il va renvoyer il y a trois possibilités
-    """
-    def  get(self, request, ordre, questionnaire):
-        question = get_object_or_404(Question, ordre=ordre, questionnaire=questionnaire)
-        ####### Variable
-        patient=request.user.patient
-        nb_Question = Questionnaire.objects.get(pk=questionnaire).nbQuestion
-        # Gestion tous patient ici
-        if request.user.has_perm("user.parcours_Patient_Suivie"):
-            enAttente.objects.update_or_create(patient=patient,questionnaire_id=questionnaire,ordreAtteint=ordre)
-        
-        # Gestion sequence patient ici
-        if nb_Question==ordre:
-            print("La fin est proche")
-            try:
-                enAttente.objects.update_or_create(questionnaire_id=questionnaire,patient=patient,ordreAtteint=ordre,forClinicien=True)
-            except enAttente.DoesNotExist:
-                print('ça passe pas !')    
-        #Integration du module ici
-        formQ = SondageForm(question = question, enAttente=request.session["enAttente"])
-        return JsonResponse({"question":"{0}".format(formQ)})
-        
-        
+
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
         
@@ -250,7 +218,7 @@ def listModules(request):
         elif request.user.has_perm("module.Sequence_Groupal"):
             pkSequence=request.user.patient.groupePatients.sequence.pk
             
-        if enAttente.objects.filter(patient=patient, module__isnull=False).exists():
+        if enAttente.objects.filter(patient=patient, isQuestionnaireOnly=False).exists():
             print("Possède des modules en attente")
             modules = enAttente.objects.select_related("module").filter(patient=patient)
         elif Ordre.objects.filter(sequence=pkSequence).exists() :
