@@ -1,10 +1,10 @@
 from django.shortcuts import render,redirect, get_object_or_404, get_list_or_404
-from .form import SondageForm, QuestionnaireForm, ModuleForm, QuestionForm, SectionForm
+from .form import SondageForm, ModuleForm, QuestionForm, SectionForm
 # Utilisation d'ajax
 from django.http import JsonResponse, HttpResponse, FileResponse
 
 from user.models import Patient, Clinicien, User, Population, Group, enAttente, Resultat 
-from .models import Section, Module, Ordre, Sequence,  Question, Reponse, Questionnaire
+from .models import Section, Module, Ordre, Sequence,  Question, Reponse
 
 from django.views.generic import View, CreateView
 
@@ -55,7 +55,7 @@ def questionnaireAnalyse(request, pk):
     enAtt = enAttente.objects.get(pk=pk)
     ########################################### Recuperation des questions qui sont enAttente pour le clinicien
     rep = Resultat.objects.filter(enAttente=enAtt, reponse__isnull=False).values("question__question", "reponse__reponse","created_at").order_by("question")
-    repLibre = Resultat.objects.filter(enAttente=enAtt, reponseLibre__isnull=False).values("question__question", "reponseLibre", "created_at")
+    repLibre = Resultat.objects.filter(enAttente=enAtt).exclude(reponseLibre="").values("question__question", "reponseLibre", "created_at")
     
     print(rep)
     print(repLibre)
@@ -157,12 +157,9 @@ class ReceveQuestion(CreateView):
     checker si la derniere question à été effectuer !
     https://stackoverflow.com/questions/4684618/django-modelmultiplechoicefield-wont-save-data
     """
-    def post(self, request,typeQ, ordre, pk):
-        if typeQ=="M":
-            question = get_object_or_404(Section, ordre=ordre, module=pk).question
-        else:
-            data['error'] =  "form not valid!"
-            question = get_object_or_404(Question, ordre=ordre, questionnaire=pk)
+    def post(self, request, ordre, pk):
+        
+        question = get_object_or_404(Section, ordre=ordre, module=pk).question
         
         print('Tu es passer gros !')
         if question.isMultipleRep:
@@ -266,21 +263,6 @@ def alterModules(request):
         formM = ModuleForm()
     listeModule = Section.objects.select_related("module").all().order_by('module__id', 'ordre').values("module__nom","module__desc","module__image","module__questionnaireDependant",'ordre',"titre")
     return render(request, "module/Alter/AlterModules.html", {"formM":formM,'modules':listeModule})
-
-def alterQuestionnaire(request):
-    if request.method=="POST":
-        formQ = QuestionnaireForm(request.POST)
-        if formQ.is_valid():
-            questionnaire = formQ.save()
-            return redirect('AlterPart/Crea/Quest/{0}/1'.format(questionnaire.pk))
-    else:
-        formQ = QuestionnaireForm()
-    listeQuestionnaire = Question.objects.select_related("questionnaire").filter(questionnaire__isnull=False).order_by('questionnaire__id','ordre').values('questionnaire__nom','questionnaire__isJournal','question','ordre')
-    return render(request, "module/Alter/AlterQuestionnaire.html", {"formQ":formQ,"questionnaire":listeQuestionnaire})
-    
-    
-    
-    
     
     
     

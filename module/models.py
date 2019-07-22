@@ -39,7 +39,7 @@ class Module (models.Model):
     isVisible=models.BooleanField(default=False)
     isQuestionnaireOnly=models.BooleanField(default=False)
     isJournal=models.BooleanField(default=False)
-    questionnaireDependant = models.ForeignKey(Module, on_delete=models.SET_NULL,null=True, blank=True) 
+    questionnaireDependant = models.ForeignKey("self", on_delete=models.SET_NULL,null=True, blank=True) 
     def __str__(self):
         return self.nom
 
@@ -52,7 +52,7 @@ class Section(models.Model):
     titre = models.CharField(max_length=250)
     ordre = models.PositiveSmallIntegerField()
     SECTION_TYPE = [(1, 'Texte et images'), (2, 'Question'),(3, 'Vidéo')]
-    SectionType = models.IntegerField(choices=INPUT_TYPE)
+    SectionType = models.IntegerField(choices=SECTION_TYPE)
     ####################### Intégration de la section
     question = models.ForeignKey('Question', on_delete=models.SET_NULL,null=True, blank=True)
     module = models.ForeignKey('Module', on_delete=models.CASCADE)

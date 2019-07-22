@@ -9,7 +9,7 @@ from django.views.generic import View, CreateView
 from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 
 from .models import Patient, Clinicien, User, Population, enAttente, Message, Agenda, Group
-from module.models import Question, Questionnaire, Reponse,Ordre
+from module.models import Question, Reponse,Ordre
 #from django.http import Http404
 
 # Mise en forme des données

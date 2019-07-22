@@ -3,6 +3,7 @@ from django import forms
 from django.forms.widgets import TextInput
 
 from .models import Population, Patient, Clinicien, Message, Agenda, enAttente
+from module.models import Module
 from django.contrib.auth.models import User 
 from django.contrib.auth.forms import UserCreationForm
 
