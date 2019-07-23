@@ -52,7 +52,7 @@ function prepareQuestion(question){
 
 function envoieReponse(module, ordre, nombreSection){
     $.post({
-            url:'questionReceve/M/'+module+'/'+ordre,
+            url:'questionReceve/'+module+'/'+ordre,
             data:$("#question").serialize(),
             beforeSend: function(){
             $("#module").html('<div class="d-flex justify-content-center col-12 mb-5 mt-5 pt-5 pb-5"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>');

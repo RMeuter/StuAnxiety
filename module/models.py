@@ -17,7 +17,7 @@ class Question(models.Model):
     isMultipleRep = models.BooleanField(default=False, choices=MULTIPLE_INPUT)
     
     def __str__(self):
-        return "{0} {1}".format(self.question)
+        return "{0}".format(self.question)
         
         
 class Reponse(models.Model):
