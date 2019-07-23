@@ -81,10 +81,11 @@ class Sectiondetail(View):
         
         #################################### Recuperation de l'ordre selon leur suivie
         if request.user.has_perm("user.parcours_Patient_Suivie") or request.user.has_perm("user.parcours_Patient_Non_Suivie"):
-            enAtt = enAttente.objects.get_or_create(patient=patient,module_id=module,forClinicien=False)
+            enAtt, create = enAttente.objects.get_or_create(patient=patient,module_id=module,forClinicien=False)
+            print(enAtt)
             enAtt.ordreAtteint=ordre
             enAtt.save()
-            request.session['enAttente']=enAtt[0].pk
+            request.session['enAttente']=enAtt.pk
             print(enAtt.pk)
             
             ##################################### Verification si le module est finit
@@ -95,7 +96,7 @@ class Sectiondetail(View):
                 enAtt.save()
                 
                 ####################### Verifie l'existance de module en attente encore
-                if not enAttente.objects.filter(patient=patient,isQuestionnaireOnly=False, forClinicien=False).exists():
+                if not enAttente.objects.filter(patient=patient, module__isQuestionnaireOnly=False, forClinicien=False).exists():
                     print("Verifie s'il n'existe plus encore des modules dans enAttente")
                     
                     ###################################### Diff de suivie
@@ -137,15 +138,15 @@ class Sectiondetail(View):
                         print("Ne suis pas une séquence !")
                         
         #Integration du module ici
-        if section.question != None and request.user.has_perm("user.parcours_Patient_Suivie"):
+        if section.SectionType == 1 :
+            return JsonResponse({"text":section.text})
+        elif section.SectionType == 2 and request.user.has_perm("user.parcours_Patient_Suivie"):
             formQ = SondageForm(question = section.question, enAttente=request.session["enAttente"])
             return JsonResponse({"question":"{0}".format(formQ)})
-        elif section.question != None and not request.user.has_perm("user.parcours_Patient_Suivie"):
+        elif section.SectionType == 2 and not request.user.has_perm("user.parcours_Patient_Suivie"):
             return get(self, request, ordre+1, module)
-        elif section.video  != None:
+        elif section.SectionType == 3:
             return JsonResponse({"video":section.video, "titre":section.titre})
-        else :
-            return JsonResponse({"text":section.text})
 
 
 from django.views.decorators.csrf import csrf_exempt
@@ -215,7 +216,7 @@ def listModules(request):
         elif request.user.has_perm("module.Sequence_Groupal"):
             pkSequence=request.user.patient.groupePatients.sequence.pk
             
-        if enAttente.objects.filter(patient=patient, isQuestionnaireOnly=False).exists():
+        if enAttente.objects.filter(patient=patient, module__isQuestionnaireOnly=False, forClinicien=False).exists():
             print("Possède des modules en attente")
             modules = enAttente.objects.select_related("module").filter(patient=patient)
         elif Ordre.objects.filter(sequence=pkSequence).exists() :
