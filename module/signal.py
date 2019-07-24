@@ -25,5 +25,17 @@ def add_nb_section(sender, instance, created, *args, **kwargs):
         mod = Module.objects.get(pk=instance.module.pk)
         mod.nbSection+=1
         mod.save()
+        if (instance.SectionType==1 and instance.text==None) or (instance.SectionType==3 and instance.video==None) or (instance.SectionType==2 and instance.question==None):
+            if instance.text!=None:
+                instance.SectionType=1
+                instance.save()
+            elif instance.video!=None:
+                instance.SectionType=3
+                instance.save()
+            elif instance.question!=None:
+                instance.SectionType=2
+                instance.save()
+            else:
+                instance.delete()
         
-          
+                
