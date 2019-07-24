@@ -2,7 +2,7 @@ from django import forms
 from django.forms.widgets import TextInput
 
 from .models import Reponse, Ordre, Module, Section, Question, Sequence
-from user.models import Resultat, enAttente 
+from user.models import Resultat, enAttente, Dossier, variableEtude
 
 from django.utils.translation import gettext_lazy as _
 
@@ -149,8 +149,33 @@ class SondageForm (forms.ModelForm):
         
     def save(self, commit=True):
         instance = super(SondageForm, self).save(commit=False)
-        instance.enAttente = self.enAttente
         instance.question = self.question
+        instance.enAttente = self.enAttente
+        if commit:
+            instance.save()
+        return instance
+
+####################################################### Formulaire d'anaylse patient !
+
+class AnalyseForm (forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        self.patient=kwargs['patient']
+        self.variable=kwargs['variable']
+        del kwargs['patient']
+        del kwargs['variable']
+        super(AnalyseForm , self).__init__(*args, **kwargs)
+        self.fields['resultat'].label = "Score de {0}".format(self.variable.nom)
+        
+    class Meta :
+        model = Dossier
+        exclude= ('created_at', 'patient', 'variable') 
+        
+        
+    def save(self, commit=True):
+        instance = super(AnalyseForm , self).save(commit=False)
+        instance.patient = self.patient
+        instance.variable = self.variable
         if commit:
             instance.save()
         return instance

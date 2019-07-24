@@ -1,9 +1,9 @@
 from django.shortcuts import render,redirect, get_object_or_404, get_list_or_404
-from .form import SondageForm, ModuleForm, QuestionForm, SectionForm
+from .form import SondageForm, ModuleForm, QuestionForm, SectionForm, AnalyseForm
 # Utilisation d'ajax
 from django.http import JsonResponse, HttpResponse, FileResponse
 
-from user.models import Patient, Clinicien, User, Population, Group, enAttente, Resultat 
+from user.models import Patient, Clinicien, User, Population, Group, enAttente, Resultat, variableEtude
 from .models import Section, Module, Ordre, Sequence,  Question, Reponse
 
 from django.views.generic import View, CreateView
@@ -51,15 +51,39 @@ def questionnaireAnalyse(request, pk):
         - M pour question issue d'un module 
         - Q pour question issue d'un questionnaire 
     """
-    
+    ### Definition des varibles
     enAtt = enAttente.objects.get(pk=pk)
+    patient= enAtt.patient
+    ####### Construction des formulaires
+    listVariable = variableEtude.objects.all()
+    if request.method =='POST':
+        OnePassage=False
+        for var in listVariable :
+            formA =AnalyseForm(request.POST, patient=patient, variable=var)
+            if formA.is_valid():
+                formA.save()
+                OnePassage=True
+        if OnePassage:
+            enAtt.isAnalyse=True
+            enAtt.save()
+        return redirect('detail', patient=patient.pk)
+    else :
+        listVariableForm = [] 
+        for var in listVariable :
+            listVariableForm.append(AnalyseForm(patient=patient, variable=var))
+    
+    
+    
     ########################################### Recuperation des questions qui sont enAttente pour le clinicien
     rep = Resultat.objects.filter(enAttente=enAtt, reponse__isnull=False).values("question__question", "reponse__reponse","created_at").order_by("question")
     repLibre = Resultat.objects.filter(enAttente=enAtt).exclude(reponseLibre="").values("question__question", "reponseLibre", "created_at")
     
-    print(rep)
-    print(repLibre)
-    return render(request, "module/Affiche/AnalyseQuestionnaire.html", {'enAtt':enAtt, "repLibre":repLibre, "rep":rep})
+    return render(request, "module/Affiche/AnalyseQuestionnaire.html",
+                  {'enAtt':enAtt,
+                   "repLibre":repLibre,
+                   "rep":rep,
+                  "formVar":listVariableForm 
+                  })
 
 
 ################################################### Appel Ajax de la section
