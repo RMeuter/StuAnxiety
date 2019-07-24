@@ -72,11 +72,12 @@ def Affectation_Permission_Groupe(sender,created, instance, **kwargs):
             permission = Permission.objects.get(content_type=content_type, codename='Sequence_Groupal')
             instance.groupe.permissions.add(permission)
 
-
+"""
 @receiver(pre_save, sender=enAttente)
 def verifie_double_et_impossibilite_enAttente(sender, instance, *args, **kwargs):
     if enAttente.objects.filter(patient=instance.patient, module=instance.module, forClinicien=False).exists():
         enAttente.objects.filter(patient=instance.patient, module=instance.module, forClinicien=False).delete()
+"""
 ############################### Integration de groupe pour les permission#####################################
 
 @receiver(post_save, sender=Patient)
