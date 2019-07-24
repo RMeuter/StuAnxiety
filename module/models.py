@@ -6,21 +6,29 @@ from ckeditor_uploader.fields import RichTextUploadingField
 #-------------------------------------- Question------------------------------------------------------------
     
 class Question(models.Model):
-   
-    question =   models.CharField(max_length=250)
-    consigne =   models.CharField(max_length=250, null=True, blank=True)
-    intervaleGraduerInput = models.PositiveSmallIntegerField(default=0, validators=[MaxValueValidator(100)]) # si différent de 0 c'est un input de type gradué
+    """
+    On choisit un type d'input qui par le questionnaire sera automatiquement mis pour teste
+    """
+    
     
     INPUT_TYPE = [(1, 'Selectionner une réponse ou plusieurs réponses'), (2, 'Bouton radio'),(3, 'Case à cocher (réponse multiple)'),(4, "Reponse texte libre"),(5, "Reponse gradué libre")]
     inputType = models.IntegerField(choices=INPUT_TYPE)
     MULTIPLE_INPUT = [(True, 'Plusieurs choix de réponses possibles'), (False, 'Une seul réponse')]
     isMultipleRep = models.BooleanField(default=False, choices=MULTIPLE_INPUT)
+   
+    question =   models.CharField(max_length=250)
+    consigne =   models.CharField(max_length=250, null=True, blank=True)
+    intervaleGraduerInput = models.PositiveSmallIntegerField(default=0, validators=[MaxValueValidator(100)]) # si différent de 0 c'est un input de type gradué
+    
     
     def __str__(self):
         return "{0}".format(self.question)
         
         
 class Reponse(models.Model):
+    """
+    Reponse possible si ce sont des choix mais l'intégration des reponses choisit par un patient est resultat. 
+    """
     reponse =   models.CharField(max_length=250)
     question  = models.ForeignKey(Question, on_delete=models.CASCADE)
     class Meta:
@@ -31,6 +39,9 @@ class Reponse(models.Model):
 #-------------------------------------- Module------------------------------------------------------------
 
 class Module (models.Model):
+    """
+    Un module est soit un questionnaire par son booléan et donc sera affecter de façon différente qu'un module d'apprentissage normal, il est unifier pour plus de facilité et de ompréhension lors de la création des séquences
+    """
     nom =   models.CharField(max_length=50)
     desc = models.CharField(max_length=250)
     image = models.ImageField(upload_to="imageModule/", blank=True)
@@ -39,7 +50,7 @@ class Module (models.Model):
     isVisible=models.BooleanField(default=False)
     isQuestionnaireOnly=models.BooleanField(default=False)
     isJournal=models.BooleanField(default=False)
-    questionnaireDependant = models.ForeignKey("self", on_delete=models.SET_NULL,null=True, blank=True) 
+    questionnaireDependant = models.ForeignKey("self", on_delete=models.SET_NULL,null=True, blank=True,limit_choices_to={'isQuestionnaireOnly': True}) 
     def __str__(self):
         return self.nom
 
@@ -82,6 +93,9 @@ class Sequence(models.Model):
         )
         
 class Ordre(models.Model):
+    """
+    Un ordre est un modules possitionner à un rang précis pour permettre l'enchainnement de module dans un ordre au sein d'une sequence
+    """
     sequence = models.ForeignKey(Sequence,on_delete=models.CASCADE)
     module = models.ForeignKey(Module,on_delete=models.CASCADE)
     ordre = models.PositiveSmallIntegerField()
