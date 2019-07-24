@@ -82,11 +82,10 @@ class Sectiondetail(View):
         #################################### Recuperation de l'ordre selon leur suivie
         if request.user.has_perm("user.parcours_Patient_Suivie") or request.user.has_perm("user.parcours_Patient_Non_Suivie"):
             enAtt, create = enAttente.objects.get_or_create(patient=patient,module_id=module,forClinicien=False)
-            print(enAtt)
             enAtt.ordreAtteint=ordre
             enAtt.save()
-            request.session['enAttente']=enAtt.pk
             print(enAtt.pk)
+            request.session['enAttente']=enAtt.pk
             
             ##################################### Verification si le module est finit
             
@@ -132,8 +131,11 @@ class Sectiondetail(View):
                                     if request.user.has_perm("module.Sequence_Individuel"):
                                         print("supprimer l'ordre d'un patient semi-sequentielle !")
                                         Sequence.objects.get(pk=pkSequence).possede.clear()
+                                    elif request.user.has_perm("module.Sequence_Groupal"):
+                                        print("A finit sa thérapie")
+                                        request.user.dateFinTherapie=timezone.now()
                             except Ordre.DoesNotExist:
-                                print("Bug dans la matrice !")
+                                print("N'a pas d'ordre dans sa sequence")
                     except NameError:
                         print("Ne suis pas une séquence !")
                         
@@ -180,8 +182,9 @@ class ReceveQuestion(CreateView):
         ##### Ici ça marche
             if formQ.is_valid():
                 print('No multi')
-                formQ.save(commit=True)
-                formQ.save_m2m()
+                ins=formQ.save(commit=True)
+                print(ins)
+                #formQ.save_m2m()
                 data= {"valide":True}
             else:
                 data= {"valide":False}
