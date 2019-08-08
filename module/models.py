@@ -15,7 +15,7 @@ class Question(models.Model):
     inputType = models.IntegerField(choices=INPUT_TYPE)
     MULTIPLE_INPUT = [(True, 'Plusieurs choix de réponses possibles'), (False, 'Une seul réponse')]
     isMultipleRep = models.BooleanField(default=False, choices=MULTIPLE_INPUT)
-   
+    isRequired = models.BooleanField(default=False)
     question =   models.CharField(max_length=250)
     consigne =   models.CharField(max_length=250, null=True, blank=True)
     intervaleGraduerInput = models.PositiveSmallIntegerField(default=0, validators=[MaxValueValidator(100)]) # si différent de 0 c'est un input de type gradué
@@ -62,11 +62,11 @@ class Section(models.Model):
     ####################### Base de la section
     titre = models.CharField(max_length=250)
     ordre = models.PositiveSmallIntegerField()
+    module = models.ForeignKey('Module', on_delete=models.CASCADE)
     SECTION_TYPE = [(1, 'Texte et images'), (2, 'Question'),(3, 'Vidéo')]
     SectionType = models.IntegerField(choices=SECTION_TYPE)
     ####################### Intégration de la section
     question = models.ForeignKey('Question', on_delete=models.SET_NULL,null=True, blank=True)
-    module = models.ForeignKey('Module', on_delete=models.CASCADE)
     text = RichTextUploadingField(null=True, blank=True)
     video = models.CharField(max_length=50,null=True, blank=True)
     class Meta:
