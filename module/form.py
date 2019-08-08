@@ -128,6 +128,7 @@ class SondageForm (forms.ModelForm):
             self.fields['reponse'].label = self.question.question
             self.fields['reponse'].help_text = self.question.consigne
             self.fields['reponse'].queryset=Reponse.objects.filter(question=self.question.pk)
+            self.fields['reponse'].required=self.question.isRequired
             del self.fields['reponseLibre']
         ####################################################################################################
         else :
@@ -141,6 +142,7 @@ class SondageForm (forms.ModelForm):
             ################################ Configuration ########################################
             self.fields['reponseLibre'].help_text = self.question.consigne
             self.fields['reponseLibre'].label = self.question.question
+            self.fields['reponseLibre'].required=self.question.isRequired
             del self.fields['reponse']
             
     class Meta :
@@ -161,8 +163,8 @@ class AnalyseForm (forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.patient=kwargs['patient']
-        self.variable=kwargs['variable']
         del kwargs['patient']
+        self.variable=kwargs['variable']
         del kwargs['variable']
         super(AnalyseForm , self).__init__(*args, **kwargs)
         self.fields['resultat'].label = "Score de {0}".format(self.variable.nom)
@@ -170,7 +172,9 @@ class AnalyseForm (forms.ModelForm):
     class Meta :
         model = Dossier
         exclude= ('created_at', 'patient', 'variable') 
-        
+        widgets = {
+            'variable': forms.HiddenInput()
+        }
         
     def save(self, commit=True):
         instance = super(AnalyseForm , self).save(commit=False)
