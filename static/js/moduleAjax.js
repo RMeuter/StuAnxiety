@@ -11,10 +11,11 @@ function video (titre, codeVideo){
 
 
 
-function affiche( module, ordre,nombreSection) {
+function affiche( module, ordre,nombreSection, retour) {
     /*
     integration fichier par : https://stackoverflow.com/questions/1999607/download-and-open-pdf-file-using-ajax
     */
+    console.log(ordre);
     if(ordre==(nombreSection+1)){
         $(location).attr('href','/module/');
         return
@@ -31,42 +32,70 @@ function affiche( module, ordre,nombreSection) {
                 else if (data.text!=undefined) $('#module').html('<div class="col-12" type="text/html" width="720" height="720">'+data.text+"</div>");
                 else {
                     $('#module').html(prepareQuestion(data.question));
+                    $("#suivant").off("click");
                     $("#suivant").remove();
                     $("#envoie").click(function(){
-                        envoieReponse(module, ordre,nombreSection);
+                        envoieReponse(module, ordre,nombreSection,retour);
                     });
                 }
             }
             $("#barre").attr("style", "width:"+Math.round(ordre*100/nombreSection)+"%");
-           
-        }});
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            alert(xhr.status);
+            alert(thrownError);
+      }
+    });
     
     }
 
 
 
 function prepareQuestion(question){
-    
     return "<form id='question' method='post' class='col-12'><div class='col-12 form-group'>"+question+"</div><button class='offset-12 col-12 btn btn-outline-dark' id='envoie'>Confirmer</button></form>";
 }
 
-function envoieReponse(module, ordre, nombreSection){
+function envoieReponse(module, ordre, nombreSection, retour){
     $.post({
             url:'questionReceve/'+module+'/'+ordre,
             data:$("#question").serialize(),
             beforeSend: function(){
             $("#module").html('<div class="d-flex justify-content-center col-12 mb-5 mt-5 pt-5 pb-5"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>');
-        },
+            },
             success:function(data){
                 if(data.valide==true){
                     ordre+=1;
                     $("#btn").html('<button id="suivant" class="btn btn-success offset-9 col-3">suivant</button>');
+                    $("#suivant").on('click', function(){
+                        passage(module, ordre, nombreSection, retour);
+                    });
                     $("#suivant").click(function() {
                     if (ordre < nombreSection) {
                         ordre++;
-                        affiche(module,ordre,nombreSection);}});
+                        affiche( module, ordre,nombreSection, retour);
+                    }});
+                    affiche( module, ordre,nombreSection, retour);
+                } else {
+                    affiche( module, ordre,nombreSection, retour);
                 }
-                    affiche(module,ordre,nombreSection);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                alert(xhr.status);
+                alert(thrownError);
             }
-            });
+        });
+}
+
+function passage ( module,ordre,nombreSection, retour){
+    if (ordre < (nombreSection-1)) {
+        ordre++;
+        affiche( module, ordre,nombreSection, retour);
+    }     
+    else if(ordre == (nombreSection)){
+        ordre++;
+        $('#suivant').text("Terminer");
+        affiche( module, ordre,nombreSection, retour);
+    } else {
+        $(location).attr("href", retour);
+    }
 }
