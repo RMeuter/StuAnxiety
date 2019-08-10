@@ -11,6 +11,10 @@ class variableEtude (models.Model):
     TYPE =[(1, "discrete"), (2, "continu")]
     typeStatistique = models.IntegerField(choices=TYPE) 
     nom = models.CharField(max_length=200, blank=True)
+    isImportante = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return self.nom
     
 ####################################### Groupe et user ####################################### 
 
@@ -173,15 +177,23 @@ class Resultat(models.Model):
     """
     Un resultat d'une question donnée peut ou non contenir des reponses non cocher mais aussi libre et il est forcément est attribuer à un patient
     """
-    enAttente = models.ForeignKey(enAttente, on_delete=models.PROTECT)
+    enAttente = models.ForeignKey(enAttente, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    reponse = models.ForeignKey(Reponse, on_delete=models.CASCADE, blank=True, null=True)
+    reponse = models.ForeignKey(Reponse, on_delete=models.CASCADE, blank=True, null=True, related_name = 'OneReponse')
+    reponses = models.ManyToManyField(Reponse, blank=True, related_name = 'ManyReponses')
     reponseLibre = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta :
         ordering =["enAttente","created_at"]
     def __str__(self):
-        return "Patient {0} {1} a dit {2} à {3} ".format(self.enAttente.patient.user.first_name,self.enAttente.patient.user.last_name,self.reponse, self.created_at)
+        if self.reponse != None:
+            return "Patient {0} {1} a dit {2} à {3} ".format(self.enAttente.patient.user.first_name,self.enAttente.patient.user.last_name,self.reponse, self.created_at)
+        else:
+            return "Patient {0} {1} a dit {2} à {3} ".format(self.enAttente.patient.user.first_name,self.enAttente.patient.user.last_name,self.reponseLibre, self.created_at)
+        
+    def typeInput(self):
+        return self.question.get_inputType_diplay()
+    
     
 class Dossier(models.Model):
     """
@@ -190,7 +202,9 @@ class Dossier(models.Model):
     """
     variable = models.ForeignKey(variableEtude, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    resultat = models.FloatField()
+    resultat = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta :
         ordering =["created_at"]
+    def __str__(self):
+        return "Patient : {0} avec {1} pour la variable {2}".format(self.patient.user.first_name, self.resultat, self.variable.nom)
