@@ -107,28 +107,26 @@ class SondageForm (forms.ModelForm):
         ## reste reponse -> FK , reponseLibre -> texteArea
         ## choix intégration : reponse, reponseLibre
         if self.question.inputType <4 :
-            if self.question.inputType == 1 :
-            ################################ Selection ########################################
-                if  self.question.isMultipleRep:
-                    self.fields['reponse'] = forms.ModelMultipleChoiceField(queryset =None, to_field_name="pk", initial=0)
-                    self.fields['reponse'].widget = forms.SelectMultiple(attrs={'class':'form-control'})
-                else : 
-                    self.fields['reponse'] = forms.ModelChoiceField(queryset =None, to_field_name="pk", initial=0)
-                    self.fields['reponse'].widget = forms.Select(attrs={'class':'form-control'})
-            ################################ CheckBox ########################################
-            elif self.question.inputType == 3 :
-                self.fields['reponse'] = forms.ModelMultipleChoiceField(queryset =None, to_field_name="pk", initial=0)
-                self.fields['reponse'].widget = forms.CheckboxSelectMultiple(attrs={'class':'form-check-input'})
-            ################################ Radio ########################################
-            elif self.question.inputType == 2 :
+            ################################ CheckBox et selction multiple ########################################
+            if self.question.inputType == 3 or (self.question.inputType == 1 and self.question.isMultipleRep)  :
+                self.fields['reponses'] = forms.ModelMultipleChoiceField(queryset =None, to_field_name="pk", initial=0)
+                self.fields['reponses'].widget = forms.CheckboxSelectMultiple(attrs={'class':'form-check-input'})
+                self.fields['reponses'].label = self.question.question
+                self.fields['reponses'].help_text = self.question.consigne
+                self.fields['reponses'].queryset=Reponse.objects.filter(question=self.question.pk)
+                self.fields['reponses'].required=self.question.isRequired
+                del self.fields['reponse']
+            ################################ Radio et selection unique ########################################
+            elif self.question.inputType == 2 or (self.question.inputType == 1 and not self.question.isMultipleRep):
                 self.fields['reponse'] = forms.ModelChoiceField(queryset =None, to_field_name="pk", initial=0)
                 self.fields['reponse'].widget = forms.RadioSelect(attrs={'class':'form-check-input'})
+                self.fields['reponse'].label = self.question.question
+                self.fields['reponse'].help_text = self.question.consigne
+                self.fields['reponse'].queryset=Reponse.objects.filter(question=self.question.pk)
+                self.fields['reponse'].required=self.question.isRequired
+                del self.fields['reponses']
                 
             ################################ Configuration ########################################
-            self.fields['reponse'].label = self.question.question
-            self.fields['reponse'].help_text = self.question.consigne
-            self.fields['reponse'].queryset=Reponse.objects.filter(question=self.question.pk)
-            self.fields['reponse'].required=self.question.isRequired
             del self.fields['reponseLibre']
         ####################################################################################################
         else :
@@ -144,6 +142,7 @@ class SondageForm (forms.ModelForm):
             self.fields['reponseLibre'].label = self.question.question
             self.fields['reponseLibre'].required=self.question.isRequired
             del self.fields['reponse']
+            del self.fields['reponses']
             
     class Meta :
         model = Resultat
