@@ -1,16 +1,6 @@
 // Pour affiner avec ajax : https://www.tutorialspoint.com/django/django_ajax.htm
 
 
-function video (titre, codeVideo){
-    /*
-    Prend un code vidéo issue de l'url youtube quand v=codeVideo
-    */
-    return '<h3 class="m-3 col-12 text-center">'+titre+'</h3><br/><iframe id="player" class="col-12" type="text/html" width="720" height="720" src="http://www.youtube.com/embed/'+codeVideo+'?enablejsapi=1&origin=http://example.com" frameborder="0"></iframe>';
-}
-
-
-
-
 function affiche( module, ordre,nombreSection, retour) {
     /*
     integration fichier par : https://stackoverflow.com/questions/1999607/download-and-open-pdf-file-using-ajax
@@ -49,7 +39,12 @@ function affiche( module, ordre,nombreSection, retour) {
     
     }
 
-
+function video (titre, codeVideo){
+    /*
+    Prend un code vidéo issue de l'url youtube quand v=codeVideo
+    */
+    return '<h3 class="m-3 col-12 text-center">'+titre+'</h3><br/><iframe id="player" class="col-12" type="text/html" width="720" height="720" src="http://www.youtube.com/embed/'+codeVideo+'?enablejsapi=1&origin=http://example.com" frameborder="0"></iframe>';
+}
 
 function prepareQuestion(question){
     return "<form id='question' method='post' class='col-12'><div class='col-12 form-group'>"+question+"</div><button class='offset-12 col-12 btn btn-outline-dark' id='envoie'>Confirmer</button></form>";
@@ -87,7 +82,7 @@ function envoieReponse(module, ordre, nombreSection, retour){
 }
 
 function passage ( module,ordre,nombreSection, retour){
-    if (ordre < (nombreSection-1)) {
+    if (ordre < (nombreSection)) {
         ordre++;
         affiche( module, ordre,nombreSection, retour);
     }     
