@@ -64,7 +64,7 @@ def questionnaireAnalyse(request, pk):
             print(request.POST)
             indexVar=0
             for var in listVariable :
-                formA =AnalyseForm({'resultat':request.POST.getlist("resultat")[indexVar]}, patient=patient, variable=var)
+                formA =AnalyseForm({'resultat':request.POST.getlist("resultat")[indexVar]}, patient=patient, variable=var, enAttente=enAtt)
                 if formA.is_valid():
                     formA.save()
                     if var.isImportante == True:
@@ -75,11 +75,12 @@ def questionnaireAnalyse(request, pk):
             if OnePassage:
                 enAtt.isAnalyse=True
                 enAtt.save()
+                return redirect('detail', patient=patient.pk)
         else :
             ######################################### Création d'une suite de formulaire pour 
             listVariableForm = [] 
             for var in listVariable :
-                listVariableForm.append(AnalyseForm(patient=patient, variable=var))
+                listVariableForm.append(AnalyseForm(patient=patient, variable=var, enAttente=enAtt))
         ########################################### Recuperation des questions qui sont enAttente pour le clinicien
         rep = Resultat.objects.filter(enAttente=enAtt, reponse__isnull=False).values("question__question", "reponse__reponse","created_at").order_by("question")
         repLibre = Resultat.objects.filter(enAttente=enAtt).exclude(reponseLibre="").values("question__question", "reponseLibre", "created_at")
