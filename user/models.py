@@ -159,10 +159,10 @@ class enAttente (models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, blank=True, null=True)
     repetition = models.PositiveSmallIntegerField(blank=True, null=True)
     dateVisible = models.DateField(default=timezone.now)
-    forClinicien = models.BooleanField(default=False)
+    dateFin = models.DateField(blank=True, null=True)
     isAnalyse = models.BooleanField(default=False)
     class Meta :
-        ordering =["patient", "forClinicien","dateVisible"]
+        ordering =["patient", "dateFin","dateVisible"]
     def __str__(self):
             return "en attente pour {0} avec {1}".format(self.patient, self.module)
     
@@ -202,9 +202,9 @@ class Dossier(models.Model):
     """
     variable = models.ForeignKey(variableEtude, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    enAttente = models.ForeignKey(enAttente, on_delete=models.CASCADE)
     resultat = models.FloatField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
     class Meta :
-        ordering =["created_at"]
+        ordering =["enAttente__dateFin"]
     def __str__(self):
         return "Patient : {0} avec {1} pour la variable {2}".format(self.patient.user.first_name, self.resultat, self.variable.nom)
