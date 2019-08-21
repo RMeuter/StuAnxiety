@@ -165,12 +165,14 @@ class AnalyseForm (forms.ModelForm):
         del kwargs['patient']
         self.variable=kwargs['variable']
         del kwargs['variable']
+        self.enAttente=kwargs['enAttente']
+        del kwargs['enAttente']
         super(AnalyseForm , self).__init__(*args, **kwargs)
         self.fields['resultat'].label = "Score de {0}".format(self.variable.nom)
         
     class Meta :
         model = Dossier
-        exclude= ('created_at', 'patient', 'variable') 
+        exclude= ('created_at', 'patient', 'variable', 'enAttente') 
         widgets = {
             'variable': forms.HiddenInput()
         }
@@ -179,6 +181,7 @@ class AnalyseForm (forms.ModelForm):
         instance = super(AnalyseForm , self).save(commit=False)
         instance.patient = self.patient
         instance.variable = self.variable
+        instance.enAttente = self.enAttente
         if commit:
             instance.save()
         return instance
