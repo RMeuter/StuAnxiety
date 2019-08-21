@@ -39,7 +39,7 @@ def patient(request):
     '''
     patient = request.user.patient
     ####### Barre de progression 
-    ModuleenAttente = enAttente.objects.filter(patient=patient, dateVisible__lte=timezone.now()).values('ordreAtteint', 'module__nom', 'module__nbSection', 'module__pk')
+    ModuleenAttente = enAttente.objects.filter(patient=patient, dateVisible__lte=timezone.now()).values('ordreAtteint', 'module__nom', 'module__nbSection','module__isQuestionnaireOnly', 'module__pk')
     if not ModuleenAttente.exists():
         ModuleenAttente=None
     else: 
@@ -74,8 +74,8 @@ def clinicien(request):
     if not listAgenda.exists():
         listAgenda = None
     if nbPatient == 0:
-        listPatients=None
         print("J'ai pas de patient je suis mauvais pour finir")
+        listPatients=None
     return render(request, "user/clinicien/Clinicien.html", {
         "listePatients":listPatients,
         "nbPatient":nbPatient,
@@ -148,19 +148,18 @@ def detail(request, patient):
     messages = Message.objects.filter(patient__id=monPatient["patient__pk"], clinicien=request.user.clinicien).values("message","created_at", "isClinicien")
     
     ############# Analyse
-    AnalyseQuestM = enAttente.objects.filter(patient=monPatient["patient__pk"], forClinicien=True).values("module__pk", "module__nom","pk")
-    print(AnalyseQuestM)
+    AnalyseQuestM = enAttente.objects.filter(patient=monPatient["patient__pk"], dateFin__isnull=False).values("module__pk", "module__nom","pk", "isAnalyse")
     
     ############# Gestion
-    #affectationQuestionnaire = enAttente.objects.filter(patient=monPatient["patient__pk"],module=None, forClinicien=False).values("questionnaire__nom", "questionnaire__pk", "ordreAtteint")
-    #if not affectationQuestionnaire.exists():
-    affectationQuestionnaire=None
+    affectationQuestionnaire = enAttente.objects.filter(patient=monPatient["patient__pk"],module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "module__pk", "ordreAtteint")
+    if not affectationQuestionnaire.exists():
+        affectationQuestionnaire=None
     
-       #"affectationQuestionnaire":affectationQuestionnaire,
     return render(request, "user/clinicien/detail.html", {
         "monPatient":monPatient, 
         "AnalyseQuestM":AnalyseQuestM,
         "formAffectQuest":formAffectQuest, 
+        "affectationQuestionnaire":affectationQuestionnaire,
         "messagerie":MessagerieForm(patient=monPatient["patient__pk"],clinicien=request.user.clinicien),
         "dialogue":messages,
         "agendaForm":formA,

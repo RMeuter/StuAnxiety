@@ -15,6 +15,7 @@ from django.views.generic import View, CreateView
 
 
 from django.utils import timezone
+from datetime import datetime
 
 #####################################################################################################################################
 def module(request, pk):
@@ -30,10 +31,10 @@ def module(request, pk):
         elif request.user.has_perm("module.Sequence_Groupal"):
             pkSequence=request.user.patient.groupePatients.sequence.pk
         if  Ordre.objects.filter(sequence=pkSequence).exists():
-            get_object_or_404(enAttente, module=pk, patient=request.user.patient, forClinicien=False, dateVisible__lte=timezone.now())
+            get_object_or_404(enAttente, module=pk, patient=request.user.patient, dateFin__isnull=True, dateVisible__lte=timezone.now())
             
     ##################################### Tous parcours !-> Ordre
-    ordre = enAttente.objects.filter(module_id=pk, patient=request.user.patient,forClinicien=False,dateVisible__lte=timezone.now()).values("ordreAtteint")
+    ordre = enAttente.objects.filter(module_id=pk, patient=request.user.patient,dateFin__isnull=True,dateVisible__lte=timezone.now()).values("ordreAtteint")
     if ordre.exists():
         ordre = ordre[0]['ordreAtteint']
     else:
@@ -54,37 +55,43 @@ def questionnaireAnalyse(request, pk):
     ### Definition des varibles
     enAtt = enAttente.objects.get(pk=pk)
     patient= enAtt.patient
-    ####### Construction des formulaires
-    listVariable = variableEtude.objects.all()
-    if request.method =='POST':
-        OnePassage=False
-        for var in listVariable :
-            formA =AnalyseForm(request.POST, patient=patient, variable=var)
-            if formA.is_valid():
-                formA.save()
-                OnePassage=True
-        if OnePassage:
-            enAtt.isAnalyse=True
-            enAtt.save()
-        return redirect('detail', patient=patient.pk)
-    else :
-        listVariableForm = [] 
-        for var in listVariable :
-            listVariableForm.append(AnalyseForm(patient=patient, variable=var))
-    
-    
-    
-    ########################################### Recuperation des questions qui sont enAttente pour le clinicien
-    rep = Resultat.objects.filter(enAttente=enAtt, reponse__isnull=False).values("question__question", "reponse__reponse","created_at").order_by("question")
-    repLibre = Resultat.objects.filter(enAttente=enAtt).exclude(reponseLibre="").values("question__question", "reponseLibre", "created_at")
-    
-    return render(request, "module/Affiche/AnalyseQuestionnaire.html",
-                  {'enAtt':enAtt,
-                   "repLibre":repLibre,
-                   "rep":rep,
-                  "formVar":listVariableForm 
-                  })
+    if enAtt.isAnalyse == False:
+        ####### Construction des formulaires
+        listVariable = variableEtude.objects.all()
+        if request.method =='POST':
+            OnePassage=False
+            # Attention à l'ajout de variable au moment où met le formulaire et on le reçois
+            print(request.POST)
+            indexVar=0
+            for var in listVariable :
+                formA =AnalyseForm({'resultat':request.POST.getlist("resultat")[indexVar]}, patient=patient, variable=var)
+                if formA.is_valid():
+                    formA.save()
+                    if var.isImportante == True:
+                        patient.lastScore = request.POST.get("resultat")[indexVar]
+                        patient.save()
+                    OnePassage=True
+                indexVar+=1
+            if OnePassage:
+                enAtt.isAnalyse=True
+                enAtt.save()
+        else :
+            ######################################### Création d'une suite de formulaire pour 
+            listVariableForm = [] 
+            for var in listVariable :
+                listVariableForm.append(AnalyseForm(patient=patient, variable=var))
+        ########################################### Recuperation des questions qui sont enAttente pour le clinicien
+        rep = Resultat.objects.filter(enAttente=enAtt, reponse__isnull=False).values("question__question", "reponse__reponse","created_at").order_by("question")
+        repLibre = Resultat.objects.filter(enAttente=enAtt).exclude(reponseLibre="").values("question__question", "reponseLibre", "created_at")
 
+        return render(request, "module/Affiche/AnalyseQuestionnaire.html",
+                      {'enAtt':enAtt,
+                       "repLibre":repLibre,
+                       "rep":rep,
+                      "formVar":listVariableForm 
+                      })
+    else:
+        return redirect('detail', patient=patient.pk)
 
 ################################################### Appel Ajax de la section
   
@@ -105,7 +112,7 @@ class Sectiondetail(View):
         
         #################################### Recuperation de l'ordre selon leur suivie
         if request.user.has_perm("user.parcours_Patient_Suivie") or request.user.has_perm("user.parcours_Patient_Non_Suivie"):
-            enAtt, create = enAttente.objects.get_or_create(patient=patient,module_id=module,forClinicien=False)
+            enAtt, create = enAttente.objects.get_or_create(patient=patient,module_id=module,dateFin__isnull=True)
             enAtt.ordreAtteint=ordre
             enAtt.save()
             print(enAtt.pk)
@@ -115,11 +122,11 @@ class Sectiondetail(View):
             
             if nb_Section==ordre:
                 print("La fin est proche")
-                enAtt.forClinicien=True
+                enAtt.dateFin=datetime.today()
                 enAtt.save()
                 
                 ####################### Verifie l'existance de module en attente encore
-                if not enAttente.objects.filter(patient=patient, module__isQuestionnaireOnly=False, forClinicien=False).exists():
+                if not enAttente.objects.filter(patient=patient, module__isQuestionnaireOnly=False, dateFin__isnull=True).exists():
                     print("Verifie s'il n'existe plus encore des modules dans enAttente")
                     
                     ###################################### Diff de suivie
@@ -164,6 +171,7 @@ class Sectiondetail(View):
                         print("Ne suis pas une séquence !")
                         
         #Integration du module ici
+        print(section.SectionType)
         if section.SectionType == 1 :
             return JsonResponse({"text":section.text})
         elif section.SectionType == 2 and request.user.has_perm("user.parcours_Patient_Suivie"):
@@ -187,31 +195,19 @@ class ReceveQuestion(CreateView):
     def post(self, request, ordre, pk):
         
         question = get_object_or_404(Section, ordre=ordre, module=pk).question
+        formQ = SondageForm(request.POST,question=question, enAttente=request.session["enAttente"])
         
-        print('Tu es passer gros !')
-        if question.isMultipleRep:
-            print('is multi')
-            formQ = SondageForm({"reponse":[1, 2]} ,question=question, enAttente=request.session["enAttente"])
-            print(formQ)
-            for rep in request.POST.get('reponse'):
-                data = {'reponse':rep}
-                formQ = SondageForm( data ,question=question, enAttente=request.session["enAttente"])
-                print(formQ)
-                if formQ.is_valid():
-                    formQ.save()
-                    formQ.save_m2m()
-        else :
-            formQ = SondageForm(request.POST,question=question, enAttente=request.session["enAttente"])
-            print(formQ)
-        ##### Ici ça marche
-            if formQ.is_valid():
-                print('No multi')
-                ins=formQ.save(commit=True)
+        if formQ.is_valid():
+            if question.isMultipleRep:
+                ins = formQ.save(commit=False)
+                ins.save()
                 print(ins)
-                #formQ.save_m2m()
-                data= {"valide":True}
+                formQ.save_m2m()
             else:
-                data= {"valide":False}
+                formQ.save(commit=True)
+            data= {"valide":True}
+        else:
+            data= {"valide":False}
         return JsonResponse(data)
 
 
@@ -243,7 +239,7 @@ def listModules(request):
         elif request.user.has_perm("module.Sequence_Groupal"):
             pkSequence=request.user.patient.groupePatients.sequence.pk
             
-        if enAttente.objects.filter(patient=patient, module__isQuestionnaireOnly=False, forClinicien=False).exists():
+        if enAttente.objects.filter(patient=patient, module__isQuestionnaireOnly=False, dateFin__isnull=True).exists():
             print("Possède des modules en attente")
             modules = enAttente.objects.select_related("module").filter(patient=patient)
         elif Ordre.objects.filter(sequence=pkSequence).exists() :
@@ -262,9 +258,9 @@ def listModules(request):
             modules = Module.objects.filter(isVisible=True, nbSection__gt=0)
         else :    
             print("Possede un ordre")
-            modules = Module.objects.filter(pk__in=enAttente.objects.filter(patient=patient,forClinicien=False).values('module'),isVisible=True, nbSection__gt=0)
+            modules = Module.objects.filter(pk__in=enAttente.objects.filter(patient=patient,dateFin__isnull=True).values('module'),isVisible=True, nbSection__gt=0)
     else :
-        modules = Module.objects.filter(isVisible=True, nbSection__gt=0)
+        modules = Module.objects.filter(isVisible=True, isQuestionnaireOnly=False, nbSection__gt=0)
     return render(request, "module/Affiche/Modules.html", {'modules':modules})
     
 #####################################################################################################################################
@@ -290,6 +286,7 @@ def alterModules(request):
     else:
         formM = ModuleForm()
     listeModule = Section.objects.select_related("module").all().order_by('module__id', 'ordre').values("module__nom","module__desc","module__image","module__questionnaireDependant",'ordre',"titre")
+    
     return render(request, "module/Alter/AlterModules.html", {"formM":formM,'modules':listeModule})
     
     
@@ -325,4 +322,3 @@ class EnvoieDifferentForm(View):
         else :
             form=None
         return HttpResponse(form)
-            

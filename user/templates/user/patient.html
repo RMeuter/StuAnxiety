@@ -37,7 +37,7 @@
                           
                            {% for quest in progressQuestionnaire %}
                             <div class="progress bg-white m-2">
-                           {% if quest.forClinicien is False %}
+                           {% if quest.dateFin == None %}
                               
                                <a href="{% url 'questionnairePatient' quest.questionnaire__pk %}" target="_blank">
                                 <div class="progress-bar progress-bar-animated bg-success" role="progressbar" style="width: {{ quest.progress }}%" aria-valuenow="{{ quest.progress }}" aria-valuemin="0" aria-valuemax="100">Questionnaire :{{quest.questionnaire__nom}} </div>
@@ -50,7 +50,7 @@
                            
                            {% for Module in progressModule %}
                             <div class="progress bg-white m-2">
-                              {% if Module.forClinicien is False %}
+                              {% if Module.dateFin == None %}
                                <a href="{% url 'module' Module.module__pk %}">
                                 <div class="progress-bar progress-bar-animated bg-warning" role="progressbar" style="width: {{ Module.progress }}%" aria-valuenow="{{ Module.progress }}" aria-valuemin="0" aria-valuemax="100"><span class="text-dark"> Module : {{Module.module__nom}} </span></div>
                                </a>
