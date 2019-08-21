@@ -42,5 +42,6 @@ def add_nb_section_and_verify_typeSection(sender, instance, created, *args, **kw
 @receiver(pre_save, sender=Section)
 def verify_double(sender, instance, *args, **kwargs):
         if Section.objects.filter(module=instance.module).exists():
-            instance.ordre = Section.objects.filter(module=instance.module).aggregate(Max('ordre')).ordre +1
+            val= Section.objects.filter(module=instance.module).aggregate(Max('ordre'))["ordre__max"]
+            instance.ordre =  val +1
                 
