@@ -31,26 +31,12 @@
                            {% endfor date in rdv %}
 
 
-                          {% if progressQuestionnaire != None or progressModule != None  %}
+                          {% if progressModule != None  %}
                         <p class="lead"> Votre progression :</p>
                          {% endif %}
-                          
-                           {% for quest in progressQuestionnaire %}
-                            <div class="progress bg-white m-2">
-                           {% if quest.dateFin == None %}
-                              
-                               <a href="{% url 'questionnairePatient' quest.questionnaire__pk %}" target="_blank">
-                                <div class="progress-bar progress-bar-animated bg-success" role="progressbar" style="width: {{ quest.progress }}%" aria-valuenow="{{ quest.progress }}" aria-valuemin="0" aria-valuemax="100">Questionnaire :{{quest.questionnaire__nom}} </div>
-                               </a>
-                               {% else %}
-                                <div class="progress-bar progress-bar-animated bg-success" role="progressbar" style="width: {{ quest.progress }}%" aria-valuenow="{{ quest.progress }}" aria-valuemin="0" aria-valuemax="100">Questionnaire :{{quest.questionnaire__nom}} </div>
-                               {% endif %}
-                            </div>
-                            {% endfor %}
-                           
                            {% for Module in progressModule %}
                             <div class="progress bg-white m-2">
-                              {% if Module.dateFin == None %}
+                              {% if Module.dateFin == "" %}
                                <a href="{% url 'module' Module.module__pk %}">
                                 <div class="progress-bar progress-bar-animated bg-warning" role="progressbar" style="width: {{ Module.progress }}%" aria-valuenow="{{ Module.progress }}" aria-valuemin="0" aria-valuemax="100"><span class="text-dark"> Module : {{Module.module__nom}} </span></div>
                                </a>
