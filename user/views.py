@@ -8,7 +8,7 @@ from django.views.generic import View, CreateView
 # Partie user
 from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 
-from .models import Patient, Clinicien, User, Population, enAttente, Message, Agenda, Group
+from .models import Patient, Clinicien, User, Population, enAttente, Message, Agenda, Group, variableEtude, Dossier
 from module.models import Question, Reponse,Ordre
 #from django.http import Http404
 
@@ -24,7 +24,8 @@ from django.db.models import F, IntegerField, ExpressionWrapper
 from django.db.models import Count, Sum, Max
 from django.db.models.functions import (ExtractDay,)
 
-
+from django.utils.safestring import SafeString
+import json 
 
 @login_required
 def patient(request):
@@ -44,16 +45,15 @@ def patient(request):
         ModuleenAttente=None
     else: 
         ModuleenAttente = ModuleenAttente.annotate(progress=ExpressionWrapper((100*F('ordreAtteint'))/F('module__nbSection'),output_field=IntegerField()))
+        print(ModuleenAttente)
     ####### Interation message agenda
     messages = Message.objects.filter(patient=patient, clinicien=patient.clinicienACharge).values("message","created_at", "isClinicien")
-    print(messages)
     rdv = Agenda.objects.filter(patient=patient, clinicien=patient.clinicienACharge).values("objet","debut","duree")
-    print(rdv)
     return render(request, "user/patient.html", {
         "progressModule": ModuleenAttente, 
         "messagerie":MessagerieForm(patient=patient,clinicien=request.user.patient.clinicienACharge),
         "dialogue":messages,
-       "rendezvous":rdv
+        "rendezvous":rdv
     })
 
 
@@ -91,7 +91,7 @@ def detail(request, patient):
     """
     
     ############# Patient
-    monPatient=User.objects.values("last_name", "first_name", "email", "patient__pk","patient__sequence").get(pk=patient)
+    monPatient=User.objects.values("last_name", "first_name", "email", "patient__pk","patient__sequence", "pk").get(pk=patient)
     
         
     ##################### Form agenda
@@ -154,6 +154,9 @@ def detail(request, patient):
     affectationQuestionnaire = enAttente.objects.filter(patient=monPatient["patient__pk"],module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "module__pk", "ordreAtteint")
     if not affectationQuestionnaire.exists():
         affectationQuestionnaire=None
+        
+    ################################################## Graphique ##################################################
+    var=variableEtude.objects.all().values("pk","nom", "seuilMinimal", "seuilMaximal","seuilMoyen")
     
     return render(request, "user/clinicien/detail.html", {
         "monPatient":monPatient, 
@@ -164,9 +167,24 @@ def detail(request, patient):
         "dialogue":messages,
         "agendaForm":formA,
         'newOrdre':formS,
-        'listOrdre':listOrdre
+        'listOrdre':listOrdre,
+        'var':var,
     })
 
+######################################################## Send Resultat data per Graph
+
+class sendDataDossier(View):
+    def get(self, request, patient, variable):
+        """
+        Faire la moyenne des resultats si le meme jours de date de fin !
+        """
+        if (variable==0):
+            dataset=Dossier.objects.filter(patient__pk=patient).values("resultat",Variable=F("variable__nom"), Date=F("enAttente__dateFin"))
+        else:
+            dataset=Dossier.objects.filter(patient__pk=patient, variable__pk=variable).values("resultat",Variable=F("variable__nom"), Date=F("enAttente__dateFin"))
+        data= dict()
+        data["variable"]=list(dataset)
+        return JsonResponse(data)
 
 ###############################################
 class messagerie(View):

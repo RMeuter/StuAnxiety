@@ -61,11 +61,9 @@
                             </div>
                             <form class="row" method="post">
                                 <div class="col-12 " >
-                                {{ messagerie }}
-                                   <div class="clearfix col-12">
-                                    <button class="col-5 btn btn-success float-left">Rafraichir</button>
-                                    <button class="col-5 btn btn-success float-right">Envoyer</button>
-                                   </div>
+                                    <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
+                                    <input id="chat-message-input" type="text" size="100"/><br/>
+                                    <input id="chat-message-submit" type="button" value="Send"/>
                                 </div>
                                 <div class="col-12">
                                    <div class="col">
@@ -79,37 +77,35 @@
                 </div>
                 <div class="tab-pane fade" id="list-activity" role="tabpanel" aria-labelledby="list-activity-list">
                     <div class="row">
-                        <div class="col-6">
-                             <div class="form-group">
-                                <table class="table table-striped">
-                                  <thead>
-                                    <tr>
-                                      <th scope="col">Questionnaire effectuer</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                 {% for quest in AnalyseQuestQ %}
-                                  <tr>
-                                  <th scope="col"><a href="{% url 'questionnaire' quest.pk %}" target="_blank" role="button">{{quest.questionnaire__nom}}</a></th>
-                                </tr>
-                                 {% endfor %}
-                                </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="col-6">
+                        <div class="col-12">
                              <div class="form-group">
                                 <table class="table table-striped">
                                   <thead>
                                     <tr>
                                       <th scope="col">Module effectuer</th>
+                                      <th >Analyse faite ?</th>
+                                      <th >Refaire l'analyse ?</th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                   {% for module in AnalyseQuestM %}
+                                      {% if module.isAnalyse == True %}
                                   <tr>
+                                      <th scope="row">{{module.module__nom}}</th>
+                                      <th scope="row">
+                                          <span class="text-success">Est déjà analysé</span>
+                                      </th>
+                                      <th scope="row"><a href="#" role="button" class="btn btn-primary">Refaire l'analyse</a></th>
+                                </tr>
+                                      {% else %}
+                                     <tr>
                                       <th scope="row"><a href="{% url 'questionnaire' module.pk %}" target="_blank" role="button">{{module.module__nom}}</a></th>
-                                    </tr>
+                                      <th scope="row">
+                                          <span class="text-warning">Demande à etre analyser</span>
+                                      </th>
+                                      <th scope="row"></th>
+                                </tr>
+                                      {% endif %}
                                  {% endfor %}
                                   </tbody>
                                 </table>
@@ -118,7 +114,47 @@
                     <hr>
             </div>
         </div>
-        <div class="tab-pane fade" id="list-progress" role="tabpanel" aria-labelledby="list-progress-list">Analyse et parcours utilisateur</div>
+        <div class="tab-pane fade" id="list-progress" role="tabpanel" aria-labelledby="list-progress-list">
+            <div class="row">
+               <div class="col-12 text-center"><h2>Analyse</h2></div>
+               <div class="col-12 text-center">
+                   <div class="radarChart"></div>
+               </div>
+               
+                    <div class="col-12">
+                       <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons">
+                           <label class="btn btn-secondary active">
+                                <input type="radio" name="graphique" class="graphique" value="0" id="Toutes variables confondues" autocomplete="off" checked> Toutes variables confondues
+                              </label>
+
+                            {% for v in var %}
+                               <label class="btn btn-secondary">
+                                <input type="radio" name="graphique" class="graphique" value="{{v.pk}}" id=" {{v.nom}}" autocomplete="off">{{v.nom}} 
+                              </label>
+                            {% endfor %}
+                        </div>                        
+                    </div>
+                    
+                    <div class="col-12">
+                        <input type="button" class="btn btn-dark float-middle mt-2" value="affichez" id="show">
+                    </div>
+                    <h5 class="col-12 text-center" id="titleGraphique">Toutes variables confondues</h5>
+                    <div class="col-12 d-flex mt-3"  style="height: 400px; width: 100%;" id="chart"></div>
+
+           
+           
+           
+           
+           
+            </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        
         <div class="tab-pane fade" id="list-change" role="tabpanel" aria-labelledby="list-change-list">
                 <h4 class="col-12 text-center m-3">Ajouter un questionnaire</h4>
                                  {% if affectationQuestionnaire is not None %}
@@ -208,6 +244,31 @@
     </div>
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script src="http://dimplejs.org/dist/dimple.v2.3.0.min.js"></script>
 <script type="text/javascript" src="{% static 'js/graphique.js' %}"></script>
+
+<script type="text/javascript">
+    var patient={{monPatient.pk}} ;
+    var listVar =  { 
+        0:
+        {"nom":"Toutes variables confondues"},
+        {% for v in var %} {{v.pk}}:{
+            "nom":"{{v.nom}}",  
+            "minVar":{{v.seuilMinimal|floatformat:0}},  
+            "maxVar":{{v.seuilMaximal|floatformat:0}},  
+            "moyVar":{{v.seuilMoyen|floatformat:0}},  
+        }  {% if not forloop.last %},{% endif %}{% endfor %} 
+};
+
+$(function(){
+    graphique(0,patient, listVar);
+    $("#show").on("click",function(){
+        $("#titleGraphique").text($("input:radio[name=graphique]:checked").attr("id"));
+        key =$("input:radio[name=graphique]:checked").val();
+        graphique(key,patient, listVar);
+            
+    });
+});
+    </script>
 {% endblock content %}
