@@ -3,6 +3,7 @@ from django.core.validators import MaxValueValidator
 from ckeditor_uploader.fields import RichTextUploadingField
 
 
+
 #-------------------------------------- Question------------------------------------------------------------
     
 class Question(models.Model):
@@ -50,7 +51,9 @@ class Module (models.Model):
     isVisible=models.BooleanField(default=False)
     isQuestionnaireOnly=models.BooleanField(default=False)
     isJournal=models.BooleanField(default=False)
-    questionnaireDependant = models.ForeignKey("self", on_delete=models.SET_NULL,null=True, blank=True,limit_choices_to={'isQuestionnaireOnly': True}) 
+    questionnaireDependant = models.ForeignKey("self", on_delete=models.SET_NULL,null=True, blank=True,limit_choices_to={'isQuestionnaireOnly': True})
+    class Meta:
+        ordering=["isQuestionnaireOnly", "isVisible",]
     def __str__(self):
         return self.nom
 
@@ -59,9 +62,10 @@ class Section(models.Model):
     """
     Il y a trois choix possible mais pas en meme temps, soit une vidéo, soit un pdf, soit une question
     """
+       
     ####################### Base de la section
     titre = models.CharField(max_length=250)
-    ordre = models.PositiveSmallIntegerField()
+    ordre = models.PositiveSmallIntegerField(default=1)
     module = models.ForeignKey('Module', on_delete=models.CASCADE)
     SECTION_TYPE = [(1, 'Texte et images'), (2, 'Question'),(3, 'Vidéo')]
     SectionType = models.IntegerField(choices=SECTION_TYPE)
@@ -73,6 +77,7 @@ class Section(models.Model):
         ordering=["module","ordre"]
     def __str__(self):
         return "{0} : {1} {2}".format(self.module, self.titre,self.ordre )
+    
 
 #-------------------------------------- Sequence ------------------------------------------------------------
 
