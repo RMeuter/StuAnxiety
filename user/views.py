@@ -53,7 +53,8 @@ def patient(request):
         "progressModule": ModuleenAttente, 
         "messagerie":MessagerieForm(patient=patient,clinicien=request.user.patient.clinicienACharge),
         "dialogue":messages,
-        "rendezvous":rdv
+        "rendezvous":rdv,
+        "salon":patient.pk,
     })
 
 
@@ -88,11 +89,12 @@ def clinicien(request):
 def detail(request, patient):
     """
     Voir pour un object404 pour eviter que les cliniciens n'ailles sur les autre dossiers.
+    Faire attention entre la différence entre le pk et uuci !
     """
     
     ############# Patient
     monPatient=User.objects.values("last_name", "first_name", "email", "patient__pk","patient__sequence", "pk").get(pk=patient)
-    
+    print(monPatient["pk"])
         
     ##################### Form agenda
     if request.method == "POST":
@@ -169,6 +171,7 @@ def detail(request, patient):
         'newOrdre':formS,
         'listOrdre':listOrdre,
         'var':var,
+        'salon':monPatient['patient__pk'],
     })
 
 ######################################################## Send Resultat data per Graph
