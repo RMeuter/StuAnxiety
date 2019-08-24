@@ -5,8 +5,8 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('profil', views.patient, name="profil"),
     path('clinicien', views.clinicien, name="clinicien"),
-    path('detail/<int:patient>', views.detail, name="detail"),
-    path('detail/datasetDossier/<int:patient>/<int:variable>', views.sendDataDossier.as_view()),
+    path('detail/<str:patient>', views.detail, name="detail"),
+    path('detail/datasetDossier/<str:patient>/<int:variable>', views.sendDataDossier.as_view()),
     
     path('register/', views.register, name='register'),
     path('registerClinicien/', views.registerClinicien, name='registerClinicien'),

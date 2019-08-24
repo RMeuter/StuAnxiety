@@ -1,11 +1,11 @@
 #https://openclassrooms.com/fr/courses/1871271-developpez-votre-site-web-avec-le-framework-django/1873767-les-utilisateurs
 from django.db import models
+import uuid
 from django.contrib.auth.models import User, Group
 from module.models import Reponse, Module, Section, Sequence, Question
 from django.utils import timezone
 from datetime import datetime
-
-####################################### Affectation de Séquence ####################################### 
+####################################### Affectation de Séquence #######################################
 
 class variableEtude (models.Model):
     """
@@ -70,16 +70,15 @@ class Clinicien(models.Model):
 
 class Patient(models.Model):
     """
-    Voir si on ne peut pas modifier pour mettre plusieur clinicien à charge
-    
-    Reflechir à un algorithme d'affectation
+
     """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #----------------------------Model en OneToOne et ForeignKey-------------------------------------------
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     groupePatients  = models.ForeignKey(Population, on_delete=models.SET_NULL, null=True)
     clinicienACharge  = models.ForeignKey(Clinicien, on_delete=models.CASCADE, null=True,blank=True, related_name = 'clinicien_du_patient')
     sequence = models.ForeignKey(Sequence,on_delete=models.SET_NULL,null=True, blank=True)
-    
+
     #----------------------------Model propre au patient-------------------------------------------
     lastScore = models.IntegerField(blank=True, null=True)
     NoSeeMsgQuantity = models.IntegerField(default=0)

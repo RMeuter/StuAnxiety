@@ -43,8 +43,8 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'ckeditor',
     'ckeditor_uploader',
-    'channels'
-    
+    'channels',
+
     'user.apps.UserConfig',
     'module.apps.ModuleConfig',
 ]
