@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     'crispy_forms',
     'django_extensions',
     'debug_toolbar',
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'module.apps.ModuleConfig',
 ]
+###################################################### Editeur Web ####################################################
 CKEDITOR_UPLOAD_PATH ="upload/"
 CKEDITOR_CONFIGS = {
     'default': {
@@ -77,18 +78,18 @@ CKEDITOR_CONFIGS = {
             {'name': 'colors', 'items': ['TextColor', 'BGColor']},
             {'name': 'tools', 'items': ['Maximize', 'ShowBlocks']},
             {'name': 'about', 'items': ['About']},
-            '/', 
+            '/',
             {'name': 'yourcustomtools', 'items': [
                 'Preview',
                 'Maximize',
 
             ]},
         ],
-        'toolbar': 'YourCustomToolbarConfig',  
+        'toolbar': 'YourCustomToolbarConfig',
         'class':'col-12',
         'tabSpaces': 4,
         'extraPlugins': ','.join([
-            'uploadimage', 
+            'uploadimage',
             'autolink',
             'autoembed',
             'embedsemantic',
@@ -107,7 +108,7 @@ CKEDITOR_CONFIGS = {
         'class':'col-9',
         'toolbar_Message':[
             ['Smiley']
-            
+
         ]
     }
 }
@@ -131,7 +132,14 @@ ROOT_URLCONF = 'etherapie.urls'
 ###################################################### Web Socket ####################################################
 # Channels
 ASGI_APPLICATION = 'etherapie.routing.application'
-###################################################### Editeur Web ####################################################
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 TEMPLATES = [
     {
@@ -208,11 +216,14 @@ STATICFILES_DIRS = [
 
 INTERNAL_IPS = ['127.0.0.1']
 
+###################################################### Crispy ####################################################
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
+###################################################### Django ####################################################
 LOGIN_REDIRECT_URL="home"
 LOGIN_URL="login"
 
+###################################################### Graphviz ####################################################
 GRAPH_MODELS = {
   'all_applications': True,
   'group_models': True,
