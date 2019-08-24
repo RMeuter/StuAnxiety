@@ -43,15 +43,11 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'ckeditor',
     'ckeditor_uploader',
+    'channels'
     
     'user.apps.UserConfig',
     'module.apps.ModuleConfig',
 ]
-###################################################### Web Socket ####################################################
-
-
-
-###################################################### Editeur Web ####################################################
 CKEDITOR_UPLOAD_PATH ="upload/"
 CKEDITOR_CONFIGS = {
     'default': {
@@ -131,6 +127,11 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'etherapie.urls'
+
+###################################################### Web Socket ####################################################
+# Channels
+ASGI_APPLICATION = 'etherapie.routing.application'
+###################################################### Editeur Web ####################################################
 
 TEMPLATES = [
     {
