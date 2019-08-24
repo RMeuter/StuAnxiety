@@ -37,17 +37,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    
     'crispy_forms',
     'django_extensions',
     'debug_toolbar',
     'ckeditor',
     'ckeditor_uploader',
-
+    
     'user.apps.UserConfig',
     'module.apps.ModuleConfig',
-
 ]
+###################################################### Web Socket ####################################################
+
+
+
+###################################################### Editeur Web ####################################################
 CKEDITOR_UPLOAD_PATH ="upload/"
 CKEDITOR_CONFIGS = {
     'default': {
@@ -131,7 +135,7 @@ ROOT_URLCONF = 'etherapie.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [ os.path.join(BASE_DIR, "templates")],
+        'DIRS': [os.path.join(BASE_DIR, "./templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -195,11 +199,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 STATIC_URL = '/static/'
 
-MEDIA_ROOT=os.path.join(BASE_DIR, "Media")
+MEDIA_ROOT=os.path.join(BASE_DIR, "./Media")
 MEDIA_URL="/Media/"
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static")]
+    os.path.join(BASE_DIR, "./static")]
 
 INTERNAL_IPS = ['127.0.0.1']
 
