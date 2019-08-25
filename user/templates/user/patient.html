@@ -61,11 +61,11 @@
                         </div>
                         
                         {% if user.patient.clinicienACharge.user.is_active %}
-                        <div class="alert alert-success col-12 text-center" role="alert">
+                        <div id="actif" class="alert alert-success col-12 text-center" role="alert">
                               Actif en ce moment
                         </div>
                         {% else %}
-                        <div class="alert alert-warning col-12 text-center" role="alert">
+                        <div id="actif" class="alert alert-warning col-12 text-center" role="alert">
                               N'est pas disponible
                         </div>
                         {% endif %}
@@ -86,7 +86,7 @@
 
 <script type="text/javascript" src="{% static 'js/moduleAjax.js' %}"></script>
 <script type="text/javascript">
- var chat = "{{ salon }}";
+    var chat = "{{ salon }}";
 
     var chatSocket = new WebSocket(
         'ws://' + window.location.host +
@@ -101,8 +101,12 @@
         } else {
             var personne ="Votre clinicien : ";
         }
-document.querySelector('#chat-log').value += (personne + message + '\n');
-    };
+        $("#actif").html('<div id="actif" class="alert alert-success col-12 text-center" role="alert">\n'
+            +'Actif en ce moment\n'
+            +'</div>'
+        );
+        document.querySelector('#chat-log').value += (personne + message + '\n');
+        };
 
     chatSocket.onclose = function(e) {
         console.error('Chat socket closed unexpectedly');
