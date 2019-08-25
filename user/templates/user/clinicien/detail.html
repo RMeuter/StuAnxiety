@@ -35,44 +35,12 @@
                         </div>
                         {% endif %}
                         <div class="col-12 shadow mt-2 rounded">
-                             <div class="row border p-2" data-spy="scroll" style="height: 400px; overflow:auto; max-height: 500px;">
-                            {% for message in dialogue %}
-                            <div class="col-12">
-                               {% if message.isClinicien is True %}
-                                <div class="bg-light offset-7 col-5 border rounded">
-                                  <h4>Vous :</h4><br><small>{{message.created_at}}</small><br>
-                                    <div class="bg-white">
-                                    <hr>
-                                     {{message.message}}
-                                    </div>
-                                </div>
-                                {% else %}
-                                <div class=" col-5 border rounded">
-                                  <h4>Votre Patient :</h4><br><small>{{message.created_at}}</small><br>
-                                    <div class="bg-light">
-                                    <hr>
-                                     {{message.message}}
-                                    </div>
-                                </div>
-                                {% endif %}
+                            <div class="row border p-2" data-spy="scroll" style="height: 400px; max-height: 500px;">
+                                <textarea id="chat-log" class="col-12" style="overflow: auto;"></textarea>
                             </div>
-                            
-                            {% endfor %}
-                            </div>
-                            <div class="row" method="post">
-                                <div class="row col-12" >
-                                <textarea id="chat-log"></textarea>
-                                   <div class="col-3">
-                                    <input type="text" id="chat-message-input">
-                                    <button id="chat-message-submit" class="col form-control btn btn-success">Envoyer</button>
-                                   </div>
-                                </div>
-                                <div class="col-12">
-                                   <div class="col">
-                                   </div>
-                                   <div class="col">
-                                   </div>
-                                </div>
+                            <div class="row col-12">
+                                    <input type="text" class="col-10" id="chat-message-input">
+                                    <button id="chat-message-submit" class="col-2 form-control btn btn-success">Envoyer</button>
                             </div>
                         </div>
                     </div>
@@ -247,7 +215,7 @@
 <script type="text/javascript" src="{% static 'js/graphique.js' %}"></script>
 
 <script type="text/javascript">
-    var patient={{monPatient.patient__pk}} ;
+    var patient="{{monPatient.patient__pk}}" ;
     var listVar =  { 
         0:
         {"nom":"Toutes variables confondues"},
@@ -268,41 +236,38 @@ $(function(){
             
     });
 });
-    </script>
-{% endblock content %}
-<script type="application/javascript">
- var chat = "{{monPatient.patient__pk}}";
 
-    var chatSocket = new WebSocket(
-        'ws://' + window.location.host +
-        '/ws/chat/' + chat + '/');
+var chatSocket = new WebSocket(
+'ws://' + window.location.host +
+'/ws/chat/' + patient + '/');
 
-    chatSocket.onmessage = function(e) {
-        var data = JSON.parse(e.data);
-        var message = data['message'];
-        var isCli = data['isCli'];
-        document.querySelector('#chat-log').value += (message + '\n');
-    };
+chatSocket.onmessage = function(e) {
+var data = JSON.parse(e.data);
+var message = data['message'];
+var isCli = data['isCli'];
+document.querySelector('#chat-log').value += (message + '\n');
+};
 
-    chatSocket.onclose = function(e) {
-        console.error('Chat socket closed unexpectedly');
-    };
+chatSocket.onclose = function(e) {
+console.error('Chat socket closed unexpectedly');
+};
 
-    document.querySelector('#chat-message-input').focus();
-    document.querySelector('#chat-message-input').onkeyup = function(e) {
-        if (e.keyCode === 13) {  // enter, return
-            document.querySelector('#chat-message-submit').click();
-        }
-    };
+document.querySelector('#chat-message-input').focus();
+document.querySelector('#chat-message-input').onkeyup = function(e) {
+if (e.keyCode === 13) {  // enter, return
+document.querySelector('#chat-message-submit').click();
+}
+};
 
-    document.querySelector('#chat-message-submit').onclick = function(e) {
-        var messageInputDom = document.querySelector('#chat-message-input');
-        var message = messageInputDom.value;
-        chatSocket.send(JSON.stringify({
-            'isCli':false,
-            'message': message
-        }));
+document.querySelector('#chat-message-submit').onclick = function(e) {
+var messageInputDom = document.querySelector('#chat-message-input');
+var message = messageInputDom.value;
+chatSocket.send(JSON.stringify({
+'isCli':true,
+'message': message
+}));
 
-        messageInputDom.value = '';
-    };
+messageInputDom.value = '';
+};
 </script>
+{% endblock content %}

@@ -69,44 +69,13 @@
                               N'est pas disponible
                         </div>
                         {% endif %}
-                        <div class="col-12 shadow mt-2 rounded">
-                            <div class="row border p-2" data-spy="scroll" style="height: 400px; overflow:auto; max-height: 500px;">
-                            {% for message in dialogue %}
-                            <div class="col-12">
-                               {% if message.isClinicien is True %}
-                                <div class="bg-light col-5 border rounded">
-                                  <h4>Votre clinicien :</h4><br><small>{{message.created_at}}</small><br>
-                                    <div class="bg-white">
-                                    <hr>
-                                     {{message.message|safe}}
-                                    </div>
+                            <div class="col-12 shadow mt-2 rounded">
+                                <div class="row border p-2" data-spy="scroll" style="height: 400px; max-height: 500px;">
+                                    <textarea id="chat-log" class="col-12" style="overflow: auto;"></textarea>
                                 </div>
-                                {% else %}
-                                <div class="offset-7 col-5 border rounded">
-                                  <h4>Vous :</h4><br><small>{{message.created_at}}</small><br>
-                                    <div class="bg-light">
-                                    <hr>
-                                     {{message.message|safe}}
-                                    </div>
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            {% endfor %}
-                            </div>
-                            <div class="row" method="post">
-                                <div class="row col-12" >
-                                <textarea id="chat-log"></textarea>
-                                   <div class="col-3">
-                                    <input type="text" id="chat-message-input">
-                                    <button id="chat-message-submit" class="col form-control btn btn-success">Envoyer</button>
-                                   </div>
-                                </div>
-                                <div class="col-12">
-                                   <div class="col">
-                                   </div>
-                                   <div class="col">
-                                   </div>
+                                <div class="row col-12">
+                                        <input type="text" class="col-10" id="chat-message-input">
+                                        <button id="chat-message-submit" class="col-2 form-control btn btn-success">Envoyer</button>
                                 </div>
                             </div>
                         </div>
@@ -114,9 +83,9 @@
                 </div>
             </div>
         </div>
-        {% endblock content %}
+
 <script type="text/javascript" src="{% static 'js/moduleAjax.js' %}"></script>
-<script type="application/javascript">
+<script type="text/javascript">
  var chat = "{{ salon }}";
 
     var chatSocket = new WebSocket(
@@ -152,3 +121,4 @@
         messageInputDom.value = '';
     };
 </script>
+            {% endblock content %}

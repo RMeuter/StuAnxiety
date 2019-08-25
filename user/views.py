@@ -47,7 +47,6 @@ def patient(request):
         ModuleenAttente = ModuleenAttente.annotate(progress=ExpressionWrapper((100*F('ordreAtteint'))/F('module__nbSection'),output_field=IntegerField()))
         print(ModuleenAttente)
     ####### Interation message agenda
-    messages = Message.objects.filter(patient=patient, clinicien=patient.clinicienACharge).values("message","created_at", "isClinicien")
     rdv = Agenda.objects.filter(patient=patient, clinicien=patient.clinicienACharge).values("objet","debut","duree")
     return render(request, "user/patient.html", {
         "progressModule": ModuleenAttente, 
@@ -66,7 +65,7 @@ def clinicien(request):
     Liste patient groupe et resultat
     """
     # Fonction liée au patient
-    listPatients = Patient.objects.filter(clinicienACharge=request.user.clinicien).values('user__first_name','user__last_name','user__last_login','groupePatients__groupe__name', 'user__pk', 'NoSeeMsgQuantity', 'lastScore')
+    listPatients = Patient.objects.filter(clinicienACharge=request.user.clinicien).values('user__first_name','user__last_name','user__last_login','groupePatients__groupe__name', 'pk', 'NoSeeMsgQuantity', 'lastScore')
     nbPatient=listPatients.count()
     nbMesg=listPatients.aggregate(nbmsg=Sum('NoSeeMsgQuantity'))
     # Fonction lié à l'agenda
@@ -93,67 +92,67 @@ def detail(request, patient):
     """
     
     ############# Patient
-    monPatient=User.objects.values("last_name", "first_name", "email", "patient__pk","patient__sequence", "pk").get(pk=patient)
+    monPatient=Patient.objects.values("user__last_name", "user__first_name", "user__email", "pk","sequence").get(pk=patient)
     print(monPatient["pk"])
         
     ##################### Form agenda
     if request.method == "POST":
-        formA = AgendaForm(request.POST,patient=monPatient["patient__pk"],clinicien=request.user.clinicien)
+        formA = AgendaForm(request.POST,patient=monPatient["pk"],clinicien=request.user.clinicien)
         print(request.POST)
         formA
         if formA.is_valid():
             formA.save()
         else:
-            formA = AgendaForm(patient=monPatient["patient__pk"],clinicien=request.user.clinicien)
+            formA = AgendaForm(patient=monPatient["pk"],clinicien=request.user.clinicien)
     else:
-        formA = AgendaForm(patient=monPatient["patient__pk"],clinicien=request.user.clinicien)
+        formA = AgendaForm(patient=monPatient["pk"],clinicien=request.user.clinicien)
     
     ##################### Form questionnaire
     if request.method == "POST":
-        formAffectQuest = AjoutQuestForm(request.POST,patient=monPatient["patient__pk"])
+        formAffectQuest = AjoutQuestForm(request.POST,patient=monPatient["pk"])
         if formAffectQuest.is_valid():
             formAffectQuest.save()
         else:
-            formAffectQuest = AjoutQuestForm(patient=monPatient["patient__pk"])
+            formAffectQuest = AjoutQuestForm(patient=monPatient["pk"])
     else:
-        formAffectQuest = AjoutQuestForm(patient=monPatient["patient__pk"])
+        formAffectQuest = AjoutQuestForm(patient=monPatient["pk"])
         
     ################# Form sequence
-    if monPatient["patient__sequence"] != None :
+    if monPatient["sequence"] != None :
         print("tu peux créer un formulaire pour redefinir la séquence d'un patient !")
-        maxValueOrdre=Ordre.objects.filter(sequence=monPatient["patient__sequence"]).aggregate(maxOrdre=Max('ordre'))['maxOrdre']
+        maxValueOrdre=Ordre.objects.filter(sequence=monPatient["sequence"]).aggregate(maxOrdre=Max('ordre'))['maxOrdre']
         if request.method == "POST":
             print("tu peux créer un formulaire pour redefinir la séquence d'un patient !")
             if maxValueOrdre is not None:
-                formS =OrdreForm(request.POST,sequence=monPatient["patient__sequence"], maxOrdre=maxValueOrdre )
+                formS =OrdreForm(request.POST,sequence=monPatient["sequence"], maxOrdre=maxValueOrdre )
             else:
-                formS =OrdreForm(request.POST,sequence=monPatient["patient__sequence"], maxOrdre=0)
+                formS =OrdreForm(request.POST,sequence=monPatient["sequence"], maxOrdre=0)
                 if formS.is_valid():
                     formS.save()
                     formS.save_m2m()
                 else:
                     if maxValueOrdre is not None:
-                        formS =OrdreForm(sequence=monPatient["patient__sequence"], maxOrdre=maxValueOrdre )
+                        formS =OrdreForm(sequence=monPatient["sequence"], maxOrdre=maxValueOrdre )
                     else:
-                        formS =OrdreForm(sequence=monPatient["patient__sequence"], maxOrdre=0)
+                        formS =OrdreForm(sequence=monPatient["sequence"], maxOrdre=0)
         else:
             if maxValueOrdre is not None:
-                formS =OrdreForm(sequence=monPatient["patient__sequence"], maxOrdre=maxValueOrdre )
+                formS =OrdreForm(sequence=monPatient["sequence"], maxOrdre=maxValueOrdre )
             else:
-                formS =OrdreForm(sequence=monPatient["patient__sequence"], maxOrdre=0)
-        listOrdre = Ordre.objects.filter(sequence=monPatient["patient__sequence"]).values('module__nom','ordre')
+                formS =OrdreForm(sequence=monPatient["sequence"], maxOrdre=0)
+        listOrdre = Ordre.objects.filter(sequence=monPatient["sequence"]).values('module__nom','ordre')
     else:
         listOrdre = None
         formS =None
     
     ### Messagerie
-    messages = Message.objects.filter(patient__id=monPatient["patient__pk"], clinicien=request.user.clinicien).values("message","created_at", "isClinicien")
+    messages = Message.objects.filter(patient__id=monPatient["pk"], clinicien=request.user.clinicien).values("message","created_at", "isClinicien")
     
     ############# Analyse
-    AnalyseQuestM = enAttente.objects.filter(patient=monPatient["patient__pk"], dateFin__isnull=False).values("module__pk", "module__nom","pk", "isAnalyse")
+    AnalyseQuestM = enAttente.objects.filter(patient=monPatient["pk"], dateFin__isnull=False).values("module__pk", "module__nom","pk", "isAnalyse")
     
     ############# Gestion
-    affectationQuestionnaire = enAttente.objects.filter(patient=monPatient["patient__pk"],module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "module__pk", "ordreAtteint")
+    affectationQuestionnaire = enAttente.objects.filter(patient=monPatient["pk"],module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "module__pk", "ordreAtteint")
     if not affectationQuestionnaire.exists():
         affectationQuestionnaire=None
         
@@ -165,8 +164,6 @@ def detail(request, patient):
         "AnalyseQuestM":AnalyseQuestM,
         "formAffectQuest":formAffectQuest, 
         "affectationQuestionnaire":affectationQuestionnaire,
-        "messagerie":MessagerieForm(patient=monPatient["patient__pk"],clinicien=request.user.clinicien),
-        "dialogue":messages,
         "agendaForm":formA,
         'newOrdre':formS,
         'listOrdre':listOrdre,
