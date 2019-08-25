@@ -57,6 +57,7 @@ def clinicien(request):
     """
     # Fonction liée au patient
     listPatients = Patient.objects.filter(clinicienACharge=request.user.clinicien).values('user__first_name','user__last_name','user__last_login','groupePatients__groupe__name', 'pk', 'NoSeeMsgQuantity', 'lastScore')
+    print(listPatients)
     nbPatient=listPatients.count()
     nbMesg=listPatients.aggregate(nbmsg=Sum('NoSeeMsgQuantity'))
     # Fonction lié à l'agenda
@@ -81,10 +82,10 @@ def detail(request, patient):
     Voir pour un object404 pour eviter que les cliniciens n'ailles sur les autre dossiers.
     Faire attention entre la différence entre le pk et uuci !
     """
-    
+
     ############# Patient
-    monPatient=Patient.objects.values("user__last_name", "user__first_name", "user__email", "telephone","skype", "sequence").get(pk=patient)
-        
+    monPatient=Patient.objects.values("user__last_name", "user__first_name", "user__email", "telephone","skype", "sequence", "dateFinTherapie").get(pk=patient)
+    print(monPatient)
     ##################### Form agenda
     if request.method == "POST":
         formA = AgendaForm(request.POST,patient=patient,clinicien=request.user.clinicien)
@@ -94,7 +95,7 @@ def detail(request, patient):
             formA = AgendaForm(patient=patient,clinicien=request.user.clinicien)
     else:
         formA = AgendaForm(patient=patient,clinicien=request.user.clinicien)
-    
+
     ##################### Form questionnaire
     if request.method == "POST":
         formAffectQuest = AjoutQuestForm(request.POST,patient=patient)
@@ -104,7 +105,7 @@ def detail(request, patient):
             formAffectQuest = AjoutQuestForm(patient=patient)
     else:
         formAffectQuest = AjoutQuestForm(patient=patient)
-        
+
     ################# Form sequence
     if monPatient["sequence"] != None :
         print("tu peux créer un formulaire pour redefinir la séquence d'un patient !")
@@ -135,19 +136,27 @@ def detail(request, patient):
 
     ############# Analyse
     AnalyseQuestM = enAttente.objects.filter(patient=patient, dateFin__isnull=False).values("module__pk", "module__nom","pk", "isAnalyse")
-    
+
     ############# Gestion
     affectationQuestionnaire = enAttente.objects.filter(patient=patient,module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "module__pk", "ordreAtteint")
     if not affectationQuestionnaire.exists():
         affectationQuestionnaire=None
-        
+
+    ############# fin thérapie
+    if request.method == 'POST':
+        if request.POST.get("finTherapie") != None:
+            pat = Patient.objects.get(pk=patient)
+            pat.dateFinTherapie = timezone.now().date()
+            pat.save()
+
+
     ################################################## Graphique ##################################################
     var=variableEtude.objects.all().values("pk","nom", "seuilMinimal", "seuilMaximal","seuilMoyen")
 
     return render(request, "user/clinicien/detail.html", {
         "monPatient":monPatient,
         "AnalyseQuestM":AnalyseQuestM,
-        "formAffectQuest":formAffectQuest, 
+        "formAffectQuest":formAffectQuest,
         "affectationQuestionnaire":affectationQuestionnaire,
         "agendaForm":formA,
         'newOrdre':formS,

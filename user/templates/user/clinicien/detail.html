@@ -91,9 +91,9 @@
                <div class="col-12 text-center">
                    <div class="radarChart"></div>
                </div>
-                    
-                      
-                      
+
+
+
                     <div class="col-12">
                        <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons">
                            <label class="btn btn-secondary active">
@@ -102,12 +102,12 @@
 
                             {% for v in var %}
                                <label class="btn btn-secondary">
-                                <input type="radio" name="graphique" class="graphique" value="{{v.pk}}" id=" {{v.nom}}" autocomplete="off">{{v.nom}} 
+                                <input type="radio" name="graphique" class="graphique" value="{{v.pk}}" id=" {{v.nom}}" autocomplete="off">{{v.nom}}
                               </label>
                             {% endfor %}
-                        </div>                        
+                        </div>
                     </div>
-                    
+
                     <div class="col-12">
                         <input type="button" class="btn btn-dark float-middle mt-2" value="affichez" id="show">
                     </div>
@@ -115,7 +115,7 @@
                     <div class="col-12 d-flex mt-3"  style="height: 400px; width: 100%;" id="chart"></div>
             </div>
         </div>
-        
+
         
         
         
@@ -145,16 +145,16 @@
                                 <div class="text-warning">
                                     Votre patient ne possède aucun questionnaire !
                                 </div>
-                                
+
                                 {% endif %}
                 <form class="col-12" method="post">
                     {% csrf_token %}
                     {{formAffectQuest|crispy}}
                     <input type="submit" class="btn btn-primary">
                 </form>
-                
+
                 <hr class="m-5">
-                
+
                 <h4 class="col-12 text-center m-3">Création d'un rendez-vous :</h4>
                 <form class="col-12" method="post">
                     {% csrf_token %}
@@ -164,10 +164,10 @@
                     </div>
                 </form>
                 <hr class="m-5">
-                
+
                 {% if listOrdre is not None %}
                 <h4 class="col-12 text-center m-3">Sequence patient groupe semi-séquentielle</h4>
-                <div class="col-12 row text-center mt-5">    
+                <div class="col-12 row text-center mt-5">
                    {% for ordre in listOrdre %}
                         {% if not forloop.first %}
                          {% ifchanged ordre.ordre %}<div class="col-1">
@@ -200,14 +200,20 @@
                 </form>
                 <hr class="m-5">
                 {% endif %}
-                
+                {% if monPatient.dateFinTherapie is None %}
                 <h4 class="col-12 text-center m-3">Fin thérapie</h4>
-                    <div class="form-row">
-                    <input class="btn btn-warning offset-4 col-4" type="button" value="Validez la fin de la thérapie">
-                    <small class="col-12 text-center m-3">En appuyant sur ce bouton votre patient aura finit sa thérapie et cela sera marqué par une date de fin</small>
-                    </div>
-                
-                </div>
+                    <form class="form-row" method="post" action="./{{ idPatient }}">
+                        {% csrf_token %}
+                        <input type="hidden" value="true" name="finTherapie">
+                        <input class="btn btn-warning offset-4 col-4" type="submit" value="Validez la fin de la thérapie">
+                        <small class="col-12 text-center m-3">En appuyant sur ce bouton votre patient aura finit sa thérapie et cela sera marqué par une date de fin</small>
+                    </form>
+
+                {% else %}
+                <h4 class="col-12 text-center m-3">Fin thérapie</h4>
+                    Votre patient à finis sa thérapie le {{ monPatient.dateFinTherapie }}
+                {% endif %}
+        </div>
     </div>
 
 </div>
