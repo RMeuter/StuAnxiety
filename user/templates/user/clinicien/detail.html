@@ -1,15 +1,16 @@
 {% extends 'layouts/baseClient.html' %}
 {% load static%}
 {% load crispy_forms_tags %}
+{% block title %}{{monPatient.user__last_name}} {{monPatient.user__first_name}}{% endblock title %}
 {% block content %}
 
 <div class="container-fluid">
     <div class="row border text-center m-3 p-3 rounded">
-        <div class="offset-4 col-4 offset-4">Dossier de {{monPatient.last_name}} {{monPatient.first_name}}
-            <br>
-            Information : <a href="mailto:{{monPatient.email}}">{{monPatient.email}}</a> 
-            {% if monPatient.telephone is not None %}, téléphone : {{monPatient.telephone}} {% endif %}
-            , Skype : <a href="skype:{{monPatient.skype}}?chat">Démarrer un chat</a>
+        <div class="offset-4 col-4 offset-4">Dossier de {{monPatient.user__last_name}} {{monPatient.user__first_name}}
+            <hr>
+            Mail :<a href="mailto:{{monPatient.user__email}}">{{monPatient.user__email}}</a> <br>
+            {% if monPatient.telephone is not None %} Téléphone : {{monPatient.telephone}} <br> {% endif %}
+            {% if monPatient.skype is not None %} Skype : <a href="skype:{{monPatient.skype}}?chat">Démarrer un chat</a> {% endif %}
         </div>
     </div>
     <div class="row">
@@ -215,7 +216,7 @@
 <script type="text/javascript" src="{% static 'js/graphique.js' %}"></script>
 
 <script type="text/javascript">
-    var patient="{{monPatient.patient__pk}}" ;
+    var patient="{{idPatient}}" ;
     var listVar =  { 
         0:
         {"nom":"Toutes variables confondues"},
@@ -228,7 +229,6 @@
 };
 
 $(function(){
-    graphique(0,patient, listVar);
     $("#show").on("click",function(){
         $("#titleGraphique").text($("input:radio[name=graphique]:checked").attr("id"));
         key =$("input:radio[name=graphique]:checked").val();

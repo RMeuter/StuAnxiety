@@ -83,7 +83,7 @@ def detail(request, patient):
     """
     
     ############# Patient
-    monPatient=Patient.objects.values("user__last_name", "user__first_name", "user__email", "sequence").get(pk=patient)
+    monPatient=Patient.objects.values("user__last_name", "user__first_name", "user__email", "telephone","skype", "sequence").get(pk=patient)
         
     ##################### Form agenda
     if request.method == "POST":
@@ -143,7 +143,7 @@ def detail(request, patient):
         
     ################################################## Graphique ##################################################
     var=variableEtude.objects.all().values("pk","nom", "seuilMinimal", "seuilMaximal","seuilMoyen")
-    
+
     return render(request, "user/clinicien/detail.html", {
         "monPatient":monPatient,
         "AnalyseQuestM":AnalyseQuestM,
@@ -153,7 +153,7 @@ def detail(request, patient):
         'newOrdre':formS,
         'listOrdre':listOrdre,
         'var':var,
-        'salon':patient,
+        'idPatient':patient,
     })
 
 ######################################################## Send Resultat data per Graph
