@@ -1,31 +1,24 @@
-# Partie Ajax
+# Partie ajax
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.forms.models import model_to_dict
-from django.utils.decorators import method_decorator
-from django.views.generic import View, CreateView
+from django.views.generic import View
 
 # Partie user
-from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
-
-from .models import Patient, Clinicien, User, Population, enAttente, Message, Agenda, Group, variableEtude, Dossier
+from django.shortcuts import render, redirect
+from .models import Patient, Clinicien, User, Population, enAttente, Agenda, Group, variableEtude, Dossier
 from module.models import Question, Reponse,Ordre
 #from django.http import Http404
 
 # Mise en forme des données
 from module.form import OrdreForm 
-from .form import MessagerieForm, AgendaForm, AjoutQuestForm, PatientClinicienForm, PatientGroupForm
+from .form import AgendaForm, AjoutQuestForm, PatientClinicienForm, PatientGroupForm
 
 
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models import F, IntegerField, ExpressionWrapper
 
-from django.db.models import Count, Sum, Max
-from django.db.models.functions import (ExtractDay,)
+from django.db.models import Sum, Max
 
-from django.utils.safestring import SafeString
-import json 
 
 @login_required
 def patient(request):
@@ -49,9 +42,7 @@ def patient(request):
     ####### Interation message agenda
     rdv = Agenda.objects.filter(patient=patient, clinicien=patient.clinicienACharge).values("objet","debut","duree")
     return render(request, "user/patient.html", {
-        "progressModule": ModuleenAttente, 
-        "messagerie":MessagerieForm(patient=patient,clinicien=request.user.patient.clinicienACharge),
-        "dialogue":messages,
+        "progressModule": ModuleenAttente,
         "rendezvous":rdv,
         "salon":patient.pk,
     })
@@ -92,30 +83,27 @@ def detail(request, patient):
     """
     
     ############# Patient
-    monPatient=Patient.objects.values("user__last_name", "user__first_name", "user__email", "pk","sequence").get(pk=patient)
-    print(monPatient["pk"])
+    monPatient=Patient.objects.values("user__last_name", "user__first_name", "user__email", "sequence").get(pk=patient)
         
     ##################### Form agenda
     if request.method == "POST":
-        formA = AgendaForm(request.POST,patient=monPatient["pk"],clinicien=request.user.clinicien)
-        print(request.POST)
-        formA
+        formA = AgendaForm(request.POST,patient=patient,clinicien=request.user.clinicien)
         if formA.is_valid():
             formA.save()
         else:
-            formA = AgendaForm(patient=monPatient["pk"],clinicien=request.user.clinicien)
+            formA = AgendaForm(patient=patient,clinicien=request.user.clinicien)
     else:
-        formA = AgendaForm(patient=monPatient["pk"],clinicien=request.user.clinicien)
+        formA = AgendaForm(patient=patient,clinicien=request.user.clinicien)
     
     ##################### Form questionnaire
     if request.method == "POST":
-        formAffectQuest = AjoutQuestForm(request.POST,patient=monPatient["pk"])
+        formAffectQuest = AjoutQuestForm(request.POST,patient=patient)
         if formAffectQuest.is_valid():
             formAffectQuest.save()
         else:
-            formAffectQuest = AjoutQuestForm(patient=monPatient["pk"])
+            formAffectQuest = AjoutQuestForm(patient=patient)
     else:
-        formAffectQuest = AjoutQuestForm(patient=monPatient["pk"])
+        formAffectQuest = AjoutQuestForm(patient=patient)
         
     ################# Form sequence
     if monPatient["sequence"] != None :
@@ -144,15 +132,12 @@ def detail(request, patient):
     else:
         listOrdre = None
         formS =None
-    
-    ### Messagerie
-    messages = Message.objects.filter(patient__id=monPatient["pk"], clinicien=request.user.clinicien).values("message","created_at", "isClinicien")
-    
+
     ############# Analyse
-    AnalyseQuestM = enAttente.objects.filter(patient=monPatient["pk"], dateFin__isnull=False).values("module__pk", "module__nom","pk", "isAnalyse")
+    AnalyseQuestM = enAttente.objects.filter(patient=patient, dateFin__isnull=False).values("module__pk", "module__nom","pk", "isAnalyse")
     
     ############# Gestion
-    affectationQuestionnaire = enAttente.objects.filter(patient=monPatient["pk"],module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "module__pk", "ordreAtteint")
+    affectationQuestionnaire = enAttente.objects.filter(patient=patient,module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "module__pk", "ordreAtteint")
     if not affectationQuestionnaire.exists():
         affectationQuestionnaire=None
         
@@ -160,7 +145,7 @@ def detail(request, patient):
     var=variableEtude.objects.all().values("pk","nom", "seuilMinimal", "seuilMaximal","seuilMoyen")
     
     return render(request, "user/clinicien/detail.html", {
-        "monPatient":monPatient, 
+        "monPatient":monPatient,
         "AnalyseQuestM":AnalyseQuestM,
         "formAffectQuest":formAffectQuest, 
         "affectationQuestionnaire":affectationQuestionnaire,
@@ -168,7 +153,7 @@ def detail(request, patient):
         'newOrdre':formS,
         'listOrdre':listOrdre,
         'var':var,
-        'salon':monPatient['patient__pk'],
+        'salon':patient,
     })
 
 ######################################################## Send Resultat data per Graph
@@ -185,18 +170,6 @@ class sendDataDossier(View):
         data= dict()
         data["variable"]=list(dataset)
         return JsonResponse(data)
-
-###############################################
-class messagerie(View):
-    """
-    https://blog.z4c.fr/chat-temps-reel-django-channels/
-    """
-    def get(self, request, patient, clinicien, last=None):
-        if last!=None :
-            mesg = list(Message.objects.filter(patient=patient, clinicien=clinicien, created_at=last).values())
-        else:
-            mesg = list(Message.objects.filter(patient=patient, clinicien=clinicien).values())
-        return JsonResponse(mesg)
 
 
 ########################################### Gestionnnaire

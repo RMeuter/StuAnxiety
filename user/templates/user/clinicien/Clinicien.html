@@ -37,7 +37,7 @@
                     </thead>
                     <tbody>
                        {% for patient in listePatients %}
-                        <tr id="patient1" onclick="appelPage({{patient.user__pk}})">
+                        <tr id="patient1" onclick="appelPage('{{patient.pk}}');">
                             <th scope="row">{{patient.user__first_name}} {{patient.user__last_name}} </th>
                             <td>{{patient.user__last_login}} </td>
                             {% if patient.lastScore != None %}
