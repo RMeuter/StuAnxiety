@@ -7,9 +7,9 @@
 <div class="container">
     <div class="row">
 
-        <h2 class="col-12 mt-3">Affectation clinicien patient :</h2>
-        <div class="col-12">
-            <div class="form-group">
+        <h2 class="col-12 mt-3 text-center">Affectation clinicien patient :</h2>
+        <div class="col-12 row">
+            <div class="form-group col-12">
                 <label for="clinicien">Clinicien</label>
                 <select class="form-control" id="clinicien">
                    {% for clinicien in allClinicien %}
@@ -17,10 +17,22 @@
                    {% endfor %}
                 </select>
             </div>
+            <div class="col-6" style="overflow: auto;  max-height: 400px;">
+                <ul class="list-group" id="listPatient">
+
+                    <li class="list-group-item">
+                        Patient 2
+                    </li>
+                </ul>
+            </div>
+            <form class="col-6" id="noListPatient" style="overflow: auto; max-height: 400px;" method="post" action=".">
+
+            </form>
         </div>
-        <form class="col-12 form-group" id="FormCli">
+
         <!--#################Formulaire Ajax#########################!-->
-           
+        <form class="col-12 form-group" id="FormCli">
+
         </form>
         <!--##########################################!-->
         <hr class="col-12">
@@ -38,6 +50,8 @@
         <form class="col-12 form-group" id="FormGroup">
             
         </form>
+
+
         <!--##################################################!-->
         <hr class="col-12">
             <h2 class="col-12">Création de groupe</h2>

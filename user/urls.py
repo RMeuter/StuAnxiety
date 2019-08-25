@@ -14,6 +14,6 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(template_name='user/logout.html'), name='logout'),
 
    path('Gestion', views.Gestion, name='gestion'),
-    path('GetPatientClinicien/<int:pkCli>', views.GestionClinicien.as_view()),
+    path('GetPatientClinicien/<int:pkCli>', views.EnvoieClinicienPatient.as_view()),
     path('GetPatientGroupe/<int:pkPop>', views.GestionGroupe.as_view()),
 ]

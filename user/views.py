@@ -191,7 +191,6 @@ def Gestion(request):
     allClinicien.annotate(nbPatient=Count('clinicien_du_patient'))
     allGroupe = Population.objects.filter(categorie__gt=1)
     formG = GroupCreationForm()
-    print("{0}".format(PatientClinicienForm()),"{0}".format(PatientGroupForm(instance=allGroupe.first())))
     return render(request, "user/clinicien/gestionResponsable.html", {"GroupFrom": formG, "allClinicien":allClinicien, "allGroupe":allGroupe})
 
 class GestionGroupe(View):
@@ -199,10 +198,24 @@ class GestionGroupe(View):
         form = PatientGroupForm(instance=Population.objects.get(pk=pkPop))
         return HttpResponse(form)
 
-class GestionClinicien(View):
+class EnvoieClinicienPatient(View):
     def get(self, request, pkCli):
-        form = PatientClinicienForm(instance=Clinicien.objects.get(pk=pkCli))
-        return HttpResponse(form)
+        listPatient=Patient.objects.filter(clinicienACharge__pk=pkCli).values("user__first_name", "user__last_name", "pk")
+        noListPatient=Patient.objects.exclude(clinicienACharge__pk=pkCli).values("user__first_name", "user__last_name", "pk")
+        gestionList=dict()
+        gestionList["listPatient"]=list(listPatient)
+        gestionList["noListPatient"]=list(noListPatient)
+        return JsonResponse(gestionList)
+
+class ReceptionClinicienPatient(View):
+    def post(self, request):
+        if request.POST.getList("listPatient") != None and request.POST.get("Clinicien") != None:
+            listPat = request.POST.getList("listPatient")
+            clinicien = Clinicien.objects.get(pk=request.POST.get("Clinicien"))
+            for patient in listPat:
+                pat = Patient.objects.get(pk=patient)
+                pat.clinicienACharge=clinicien
+                pat.save()
         
 ########################################### Inscription
 

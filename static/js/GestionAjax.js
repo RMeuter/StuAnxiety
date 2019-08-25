@@ -1,33 +1,26 @@
 $(function(){
-    $.get({
-        url:"GetPatientClinicien/"+$( "#clinicien" ).val(),
-        success: function(data){
-            $("#FormCli").html(data+"<input type='submit' class='btn btn-primary'/>");
-        }
-          });
-
-
 
    $( "#clinicien" ).change(function() {
     $.get({
         url:"GetPatientClinicien/"+$( "#clinicien" ).val(),
         success: function(data){
-            $("#FormCli").html(data+"<input type='submit' class='btn btn-primary'/>");
+            buildForm(data, 'noListPatient', 'listPatient',$( "#clinicien" ).val(), "Clinicien");
         }
-          });
    });
+   });
+
     //------------------------------------------------------
     $.get({
         url:"GetPatientGroupe/"+$("#groupe").val(),
         success: function(data){
-            $("#FormGroup").html(data+"<input type='submit' class='btn btn-primary'/>");
+            buildForm(data, 'noListPatient', 'listPatient',$( "#clinicien" ).val(), "Clinicien");
         }
           });
 
 
 
    $( "#groupe" ).change(function() {
-    $.get({
+       $.get({
         url:"GetPatientGroupe/"+$("#groupe").val(),
         success: function(data){
             $("#FormGroup").html(data+"<input type='submit' class='btn btn-primary'/>");
@@ -37,3 +30,38 @@ $(function(){
 });
 
 Url = ["GetPatientGroupe/<int:pkPop>","GetPatientClinicien/<int:pkCli>" ]
+
+function buildForm(data, nameNoList, nameList, pkhidden, typeHidden) {
+    let listPat = data.listPatient;
+            let noListPat = data.noListPatient;
+            $("#"+nameList).html("");
+            $("#"+nameNoList).html('<input type="hidden" name="'+typeHidden
+                                    +'" value="'+ pkhidden+'">'
+            );
+
+
+            for (var key in listPat){
+                $("#"+nameList).append(buildList(listPat[key].user__first_name,listPat[key].user__last_name));
+            }
+            $("#"+nameList).append("<input type='submit' class='btn btn-primary'/>");
+            for (var key in noListPat){
+                $("#"+nameNoList).append(buildCheckbox(nolistPat[key].user__first_name,listPat[key].user__last_name,listPat[key].pk));
+            }
+            $("#"+nameNoList).append("<input type='submit' class='btn btn-primary'/>");
+}
+
+
+function buildCheckbox(lastName, firstName, pk) {
+    return '<div class="input-group">'
+        + '<div class="input-group-prepend">'
+        + '<div class="input-group-text">'
+        + '<input type="checkbox" name="Patient" value="'+ pk +'">'
+        +'</div>'
+        +'</div>'
+        +'<div class="form-control">'
+        + firstName + lastName
+        + '</div>' + '</div>';
+}
+function buildList(lastName, firstName) {
+    return ' <li class="list-group-item">' + lastName + firstName + '</li>';
+}
