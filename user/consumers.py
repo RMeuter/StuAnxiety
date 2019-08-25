@@ -1,14 +1,14 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
-from .models import Message
+from .models import Message, Patient
 
 
 class ChatPatientConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['UUCIpatient']
         self.room_group_name = 'chat_%s' % self.room_name
-
+        self.patient = Patient.objects.get(pk= self.room_name)
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
@@ -16,7 +16,7 @@ class ChatPatientConsumer(WebsocketConsumer):
         )
         self.accept()
 
-        query = Message.objects.filter(patient__pk=self.room_name)[:30]
+        query = Message.objects.filter(patient=self.patient)[:30]
         for message in query:
             self.send(text_data=json.dumps({
                 'isCli': query.isClinicien,
@@ -37,6 +37,8 @@ class ChatPatientConsumer(WebsocketConsumer):
         message = text_data_json['message']
         isCli = text_data_json['isCli']
 
+        newMess = Message.objects.create(patient=self.patient, clinicien=self.patient.clinicienACharge, message=message, isClinicien=isCli)
+        newMess.save()
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
