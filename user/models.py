@@ -114,7 +114,7 @@ class Message(models.Model):
     isClinicien = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta :
-        ordering =["patient", "created_at"]
+        ordering =["patient", "-created_at"]
 
 class Agenda(models.Model):
     """

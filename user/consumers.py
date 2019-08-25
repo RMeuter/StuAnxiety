@@ -1,6 +1,7 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
+from .models import Message
 
 
 class ChatPatientConsumer(WebsocketConsumer):
@@ -13,8 +14,15 @@ class ChatPatientConsumer(WebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-
         self.accept()
+
+        query = Message.objects.filter(patient__pk=self.room_name)[:30]
+        for message in query:
+            self.send(text_data=json.dumps({
+                'isCli': query.isClinicien,
+                'message': query.message
+            }))
+
 
     def disconnect(self, close_code):
         # Leave room group
@@ -48,4 +56,5 @@ class ChatPatientConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             'isCli': isCli,
             'message': message
-        }))
+        })
+        )
