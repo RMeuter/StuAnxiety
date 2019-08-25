@@ -96,7 +96,12 @@
         var data = JSON.parse(e.data);
         var message = data['message'];
         var isCli = data['isCli'];
-        document.querySelector('#chat-log').value += (message + '\n');
+        if (isCli==false){
+            var personne ="Vous : ";
+        } else {
+            var personne ="Votre clinicien : ";
+        }
+document.querySelector('#chat-log').value += (personne + message + '\n');
     };
 
     chatSocket.onclose = function(e) {
