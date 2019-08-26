@@ -1,11 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Erreur 404</title>
-</head>
-<body>
-   <h1>Page non trouvé !</h1>
+ {% extends 'layouts/baseClient.html' %}
+   {% block title %}
+   Erreur 404
+   {% endblock  %}
+{% block content %}
+    <div class="container">
+        <h1 class="col-12 text-center">Page non trouvé !</h1>
+        <p>Votre recherche où requet n'a pas abouti ! Attention ce que vous voulez voir !</p>
+    </div>
 
-</body>
-</html>
+
+
+{% endblock %}

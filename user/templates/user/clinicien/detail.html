@@ -212,7 +212,7 @@
                 {% else %}
                 <h4 class="col-12 text-center m-3">Fin thérapie</h4>
                 <div class="col-12 text-center">
-                    Votre patient à finis sa thérapie le {{ monPatient.dateFinTherapie }}.
+                    Votre patient a finit sa thérapie le {{ monPatient.dateFinTherapie }}.
                 </div>
                 {% endif %}
         </div>
@@ -233,7 +233,8 @@
             "minVar":{{v.seuilMinimal|floatformat:0}},  
             "maxVar":{{v.seuilMaximal|floatformat:0}},  
             "moyVar":{{v.seuilMoyen|floatformat:0}},  
-        }  {% if not forloop.last %},{% endif %}{% endfor %} 
+        }
+        {% if not forloop.last %},{% endif %}{% endfor %}
 };
 
 $(function(){
