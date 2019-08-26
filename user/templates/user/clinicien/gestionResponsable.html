@@ -17,28 +17,24 @@
                    {% endfor %}
                 </select>
             </div>
-            <div class="col-6" style="overflow: auto;  max-height: 400px;">
-                <ul class="list-group" id="listPatient">
-
-                    <li class="list-group-item">
-                        Patient 2
-                    </li>
+            <div class="col-6 row" style="overflow: auto;  max-height: 500px; min-height: 200px">
+                <h4 class="col-12">Patient déjà affecter au clinicien</h4>
+                <ul class=" col-12 list-group" id="listPatientC">
                 </ul>
             </div>
-            <form class="col-6" id="noListPatient" style="overflow: auto; max-height: 400px;" method="post" action=".">
+            <form class="col-6 row" method="post" action="./Gestion">
+                {% csrf_token %}
+                <div class="col-12" id="noListPatientC" style="overflow: auto; max-height: 500px; min-height: 200px;">
 
+                </div>
+                <input type='submit' value='Valider' class='col-12 btn btn-primary'/>
             </form>
         </div>
 
-        <!--#################Formulaire Ajax#########################!-->
-        <form class="col-12 form-group" id="FormCli">
-
-        </form>
         <!--##########################################!-->
-        <hr class="col-12">
-        <h2 class="col-12 mt-3">Affectation groupe patient :</h2>
-        <div class="col-12">
-            <div class="form-group">
+        <h2 class="col-12 mt-3 text-center">Affectation Groupe patient :</h2>
+        <div class="col-12 row">
+            <div class="form-group col-12">
                 <label for="groupe">Groupe</label>
                 <select class="form-control" id="groupe">
                    {% for groupe in allGroupe %}
@@ -46,10 +42,21 @@
                    {% endfor %}
                 </select>
             </div>
+            <div class="col-6 row" style="overflow: auto;  max-height: 500px; min-height: 200px">
+                <h4 class="col-12">Patient déjà affecter au groupe</h4>
+                <ul class=" col-12 list-group" id="listPatientP">
+                </ul>
+            </div>
+            <form class="col-6 row" method="post" action="./Gestion">
+                {% csrf_token %}
+                <div class="col-12" id="noListPatientP" style="overflow: auto; max-height: 500px; min-height: 200px;">
+
+                </div>
+                <input type='submit' value='Valider' class='col-12 btn btn-primary'/>
+            </form>
+
         </div>
-        <form class="col-12 form-group" id="FormGroup">
-            
-        </form>
+        <!--##########################################!-->
 
 
         <!--##################################################!-->

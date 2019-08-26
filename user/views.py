@@ -188,21 +188,23 @@ from django.db.models import Count
 @login_required
 def Gestion(request):
     allClinicien = Clinicien.objects.all()
-    allClinicien= allClinicien.annotate(nbPatient=Count('clinicien_du_patient'))
+    nb= allClinicien.annotate(nbPatient=Count('clinicien_du_patient'))
+    print(nb)
     allGroupe = Population.objects.filter(categorie__gt=1)
     formG = GroupCreationForm()
+
     ### Reception :
     if request.method== "POST":
-        if request.POST.get("Clinicien") != None and request.POST.getList("clinicien_du_patient"):
+        if "Clinicien" in request.POST and "clinicien_du_patient" in request.POST :
             clinicien = Clinicien.objects.get(pk=request.POST.get("Clinicien"))
-            listPat = request.POST.getList("clinicien_du_patient")
+            listPat = request.POST.getlist("clinicien_du_patient")
             for var in listPat:
-                pat = Patient.objects.get(pk=listPat[var])
+                pat = Patient.objects.get(pk=var)
                 pat.clinicienACharge=clinicien
                 pat.save()
-        if request.POST.get("Population") != None and request.POST.getList("groupe_Patient"):
+        if "Population" in request.POST and "groupe_Patient" in request.POST:
             pop = Population.objects.get(pk=request.POST.get("Population"))
-            listPat = request.POST.getList("groupe_Patient")
+            listPat = request.POST.getist("groupe_Patient")
             for var in listPat:
                 pat = Patient.objects.get(pk=listPat[var])
                 pat.groupePatients=pop
@@ -220,9 +222,7 @@ class EnvoieClinicienPatient(View):
         listPatient=Patient.objects.filter(clinicienACharge__pk=pkCli).values("user__first_name", "user__last_name")
         gestionList=dict()
         gestionList["listPatient"]=list(listPatient)
-        #print(PatientClinicienForm(clinicien=pkCli))
         gestionList["noListPatient"]="{0}".format(PatientClinicienForm(clinicien=pkCli))
-        print(gestionList)
         return JsonResponse(gestionList)
 
 class ReceptionClinicienPatient(View):
