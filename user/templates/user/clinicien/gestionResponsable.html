@@ -17,12 +17,12 @@
                    {% endfor %}
                 </select>
             </div>
-            <div class="col-6 row" style="overflow: auto;  max-height: 500px; min-height: 200px">
-                <h4 class="col-12">Patient déjà affecter au clinicien</h4>
-                <ul class=" col-12 list-group" id="listPatientC">
+            <div class="col-5 row border rounded p-2" style="overflow: auto;  max-height: 500px; min-height: 200px">
+                <p class="col-12">Patient déjà affecter au clinicien</p>
+                <ul class="col-12 list-group" id="listPatientC">
                 </ul>
             </div>
-            <form class="col-6 row" method="post" action="./Gestion">
+            <form class="offset-2 col-5 row border rounded p-2" method="post" action="./Gestion">
                 {% csrf_token %}
                 <div class="col-12" id="noListPatientC" style="overflow: auto; max-height: 500px; min-height: 200px;">
 
@@ -30,24 +30,25 @@
                 <input type='submit' value='Valider' class='col-12 btn btn-primary'/>
             </form>
         </div>
-
+        <hr/>
         <!--##########################################!-->
+
         <h2 class="col-12 mt-3 text-center">Affectation Groupe patient :</h2>
         <div class="col-12 row">
             <div class="form-group col-12">
                 <label for="groupe">Groupe</label>
                 <select class="form-control" id="groupe">
                    {% for groupe in allGroupe %}
-                    <option value="{{groupe.pk}}">{{groupe.groupe.name}} {{groupe.categorie}} avec groupe.nbPatient </option>
+                    <option value="{{groupe.pk}}">{{groupe.groupe.name}} catégorie {{groupe.get_categorie_display}} </option>
                    {% endfor %}
                 </select>
             </div>
-            <div class="col-6 row" style="overflow: auto;  max-height: 500px; min-height: 200px">
+            <div class="col-5 row border rounded p-2" style="overflow: auto;  max-height: 500px; min-height: 200px">
                 <h4 class="col-12">Patient déjà affecter au groupe</h4>
                 <ul class=" col-12 list-group" id="listPatientP">
                 </ul>
             </div>
-            <form class="col-6 row" method="post" action="./Gestion">
+            <form class="offset-2 col-5 row border rounded p-2" method="post" action="./Gestion">
                 {% csrf_token %}
                 <div class="col-12" id="noListPatientP" style="overflow: auto; max-height: 500px; min-height: 200px;">
 
@@ -62,10 +63,11 @@
         <!--##################################################!-->
         <hr class="col-12">
             <h2 class="col-12">Création de groupe</h2>
-        <div class="col-12 bg-light mb-3">
+        <form method="post" action="./Gestion" class="col-12 bg-light mb-3">
+            {% csrf_token %}
             {{GroupFrom|crispy}}
-            <button class="btn btn-success">Créé</button>
-        </div>
+            <input type="submit" class="btn btn-success"/>
+        </form>
 
     </div>
 </div>

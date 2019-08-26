@@ -15,5 +15,5 @@ urlpatterns = [
 
     path('Gestion', views.Gestion, name='gestion'),
     path('GetPatientClinicien/<int:pkCli>', views.EnvoieClinicienPatient.as_view()),
-    path('GetPatientGroupe/<int:pkPop>', views.GestionGroupe.as_view()),
+    path('EnvoiePopulationPatient/<int:pkPop>', views.EnvoiePopulationPatient.as_view()),
 ]

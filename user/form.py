@@ -147,13 +147,19 @@ class PatientClinicienForm(forms.ModelForm):
         self.fields['clinicien_du_patient'].widget = forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'})
         self.fields["clinicien_du_patient"].queryset = Patient.objects.exclude(clinicienACharge__pk=self.clincien__pk)
 ########################################## Population #############################################
-class PatientGroupForm(forms.ModelForm):
-    patient=forms.ModelMultipleChoiceField(queryset=Patient.objects.all().order_by('groupePatients'), to_field_name="pk", widget=forms.SelectMultiple(attrs={'class':'form-control'}), initial=0, required=True)
+class PatientPopulationForm(forms.ModelForm):
+    patient = forms.ModelMultipleChoiceField(label="Patient ne faisait pas partie du groupe",
+                                                          queryset=None, to_field_name="pk", initial=0)
     class Meta:
-        model=Population
-        fields=['patient']
+        model = Population
+        fields = ['patient']
+
     def __init__(self, *args, **kwargs):
-        super(PatientGroupForm, self).__init__(*args, **kwargs)
+        self.population__pk = kwargs['population']
+        del kwargs['population']
+        super(PatientPopulationForm, self).__init__(*args, **kwargs)
+        self.fields['patient'].widget = forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'})
+        self.fields["patient"].queryset = Patient.objects.exclude(groupePatients=self.population__pk)
 
 ########################################## Population #############################################
 class GroupCreationForm(forms.ModelForm):

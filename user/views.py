@@ -10,7 +10,7 @@ from module.models import Question, Reponse,Ordre
 
 # Mise en forme des données
 from module.form import OrdreForm 
-from .form import AgendaForm, AjoutQuestForm, PatientClinicienForm, PatientGroupForm
+from .form import AgendaForm, AjoutQuestForm
 
 
 from django.contrib.auth.decorators import login_required
@@ -183,15 +183,16 @@ class sendDataDossier(View):
 
 ########################################### Gestionnnaire
 
-from .form import UserRegisterFrom, PatientRegisterFrom, PatientClinicienForm, GroupCreationForm, ClinicienRegisterFrom
+from .form import UserRegisterFrom, PatientRegisterFrom, PatientPopulationForm, PatientClinicienForm, GroupCreationForm, ClinicienRegisterFrom
 from django.db.models import Count
+import random
+
 @login_required
 def Gestion(request):
     allClinicien = Clinicien.objects.all()
     nb= allClinicien.annotate(nbPatient=Count('clinicien_du_patient'))
     print(nb)
     allGroupe = Population.objects.filter(categorie__gt=1)
-    formG = GroupCreationForm()
 
     ### Reception :
     if request.method== "POST":
@@ -202,20 +203,33 @@ def Gestion(request):
                 pat = Patient.objects.get(pk=var)
                 pat.clinicienACharge=clinicien
                 pat.save()
-        if "Population" in request.POST and "groupe_Patient" in request.POST:
+        elif "Population" in request.POST and "patient" in request.POST:
             pop = Population.objects.get(pk=request.POST.get("Population"))
-            listPat = request.POST.getist("groupe_Patient")
+            listPat = request.POST.getlist("groupe_Patient")
             for var in listPat:
-                pat = Patient.objects.get(pk=listPat[var])
+                pat = Patient.objects.get(pk=var)
                 pat.groupePatients=pop
                 pat.save()
-
+        if GroupCreationForm(request.POST).is_valid():
+            formG = GroupCreationForm(request.POST)
+            ins = formG.save(commit=False)
+            newGroup = Group.objects.create(name="Groupe expérimental numéro :{0}".format(random.randint(0, 100)))
+            ins.groupe = newGroup
+            ins.save()
+        else:
+            formG = GroupCreationForm(request.POST)
+    else:
+        formG = GroupCreationForm()
     return render(request, "user/clinicien/gestionResponsable.html", {"GroupFrom": formG, "allClinicien":allClinicien, "allGroupe":allGroupe})
 
-class GestionGroupe(View):
+class EnvoiePopulationPatient(View):
     def get(self, request, pkPop):
-        form = PatientGroupForm(instance=Population.objects.get(pk=pkPop))
-        return HttpResponse(form)
+        listPatient=Patient.objects.filter(groupePatients=pkPop).values("user__first_name", "user__last_name")
+        gestionList=dict()
+        gestionList["listPatient"]=list(listPatient)
+        gestionList["noListPatient"]="{0}".format(PatientPopulationForm(population=pkPop))
+        return JsonResponse(gestionList)
+
 
 class EnvoieClinicienPatient(View):
     def get(self, request, pkCli):
@@ -225,15 +239,6 @@ class EnvoieClinicienPatient(View):
         gestionList["noListPatient"]="{0}".format(PatientClinicienForm(clinicien=pkCli))
         return JsonResponse(gestionList)
 
-class ReceptionClinicienPatient(View):
-    def post(self, request):
-        if request.POST.getList("clinicien_du_patient") != None and request.POST.get("Clinicien") != None:
-            listPat = request.POST.getList("clinicien_du_patient")
-            clinicien = Clinicien.objects.get(pk=request.POST.get("Clinicien"))
-            for patient in listPat:
-                pat = Patient.objects.get(pk=patient)
-                pat.clinicienACharge=clinicien
-                pat.save()
         
 ########################################### Inscription
 

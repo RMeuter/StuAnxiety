@@ -4,9 +4,9 @@ $(function(){
         envoieData("GetPatientClinicien/"+$( "#clinicien" ).val(), $( "#clinicien" ).val(), "Clinicien");
    });
     //############################################################### Groupe ###########################################################
-    envoieData("GetPatientGroupe/"+$("#groupe").val(),$("#groupe").val(),"Population");
+    envoieData("EnvoiePopulationPatient/"+$("#groupe").val(),$("#groupe").val(),"Population");
    $( "#groupe" ).change(function() {
-       envoieData("GetPatientGroupe/"+$("#groupe").val(),$("#groupe").val(),"Population");
+       envoieData("EnvoiePopulationPatient/"+$("#groupe").val(),$("#groupe").val(),"Population");
    });
 });
 
@@ -33,7 +33,7 @@ function envoieData(url, val, type) {
          $.get({
             url:url,
             success: function(data){
-            buildForm(data, 'noListPatientP', 'listPatientP',$( "#groupe" ).val(), "Population");
+            buildForm(data, 'noListPatientP', 'listPatientP',val, "Population");
             }
          });
     }
@@ -52,11 +52,13 @@ function buildForm(data, nameNoList, nameList, pkhidden, typeHidden) {
     var listPat = data.listPatient;
     var noListPat = data.noListPatient;
     var liststr = "";
+    var compte = 0;
     for (var key in listPat){
         liststr += buildList(listPat[key].user__first_name,listPat[key].user__last_name);
+        compte++;
     }
     $("#"+nameList).html(
-        liststr
+        liststr+buildList("<span class='text-warning'>Possède ",compte+" patients</span>")
     );
     $("#"+nameNoList).html('<input type="hidden" name="'+typeHidden
         + '" value="'+ pkhidden+'">'
