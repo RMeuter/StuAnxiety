@@ -136,16 +136,16 @@ class AjoutQuestForm(forms.ModelForm):
         
 ########################################## clinicien #############################################
 class PatientClinicienForm(forms.ModelForm):
-    clinicien_du_patient = forms.ModelMultipleChoiceField(queryset=None, to_field_name="pk", initial=0)
+    clinicien_du_patient = forms.ModelMultipleChoiceField(label="Patient n'étant pas à la charge du clinicien" ,queryset=None, to_field_name="pk", initial=0)
     class Meta:
         model=Clinicien
         fields=['clinicien_du_patient']
     def __init__(self, *args, **kwargs):
-        self.clincien = kwargs['clinicien']
+        self.clincien__pk = kwargs['clinicien']
         del kwargs['clinicien']
         super(PatientClinicienForm, self).__init__(*args, **kwargs)
         self.fields['clinicien_du_patient'].widget = forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'})
-        self.fields["clinicien_du_patient"]= Patient.objects.exclude(clinicienACharge__pk=self.clincien)
+        self.fields["clinicien_du_patient"].queryset = Patient.objects.exclude(clinicienACharge__pk=self.clincien__pk)
 ########################################## Population #############################################
 class PatientGroupForm(forms.ModelForm):
     patient=forms.ModelMultipleChoiceField(queryset=Patient.objects.all().order_by('groupePatients'), to_field_name="pk", widget=forms.SelectMultiple(attrs={'class':'form-control'}), initial=0, required=True)

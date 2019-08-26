@@ -188,7 +188,7 @@ from django.db.models import Count
 @login_required
 def Gestion(request):
     allClinicien = Clinicien.objects.all()
-    allClinicien.annotate(nbPatient=Count('clinicien_du_patient'))
+    allClinicien= allClinicien.annotate(nbPatient=Count('clinicien_du_patient'))
     allGroupe = Population.objects.filter(categorie__gt=1)
     formG = GroupCreationForm()
     ### Reception :
@@ -220,8 +220,8 @@ class EnvoieClinicienPatient(View):
         listPatient=Patient.objects.filter(clinicienACharge__pk=pkCli).values("user__first_name", "user__last_name")
         gestionList=dict()
         gestionList["listPatient"]=list(listPatient)
-        print(PatientClinicienForm(clinicien=pkCli))
-        #gestionList["noListPatient"]=list("{0}".format(PatientClinicienForm(clinicien=pkCli)))
+        #print(PatientClinicienForm(clinicien=pkCli))
+        gestionList["noListPatient"]="{0}".format(PatientClinicienForm(clinicien=pkCli))
         print(gestionList)
         return JsonResponse(gestionList)
 
