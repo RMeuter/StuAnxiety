@@ -4,17 +4,21 @@ body {
 }
 
 nav {
-    background-color: aquamarine;
+    background-color: #52ffe6;
 }
 
 #bandeau {
-    background-color: aquamarine;
+    background-color: #52ffe6;
     display: flex;
     flex-direction: column;
     justify-content: center;
-
 }
 
 footer {
-
+    position: fixed;
+    height: 50px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    margin-bottom: 0px;
 }
