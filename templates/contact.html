@@ -1,13 +1,16 @@
 {% extends 'layouts/baseClient.html' %}
-
+{% block title %}Contact{% endblock title %}
 {% block content %}
-<div class="container m-5">
-    <h2 class="col-12 ">
-        Qui contacter ?
-    </h2>
-    <ul class="col-12 mt-5">
-        <li>Hopital Lapeyronie : 04XXXXXXX</li>
-        <li>Amandine Garbisson (Psychologue) :  mail@mail.fr</li>
-        <li>Stéphane Raffard (Professeur en psychologie) :  mail@mail.fr</li>
-    </ul>
-    {% endblock content %}
+    <div class="container">
+        <div class="row">
+            <h2 class="col-12 text-center mt-5">
+                Qui contacter ?
+            </h2>
+            <ul class="col-12 mt-5">
+                <li>Hopital Lapeyronie : 04XXXXXXX</li>
+                <li>Amandine Garbisson (Psychologue) : mail@mail.fr</li>
+                <li>Stéphane Raffard (Professeur en psychologie) : mail@mail.fr</li>
+            </ul>
+        </div>
+    </div>
+{% endblock content %}

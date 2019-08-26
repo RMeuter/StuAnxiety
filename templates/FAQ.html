@@ -1,26 +1,25 @@
 {% extends 'layouts/baseClient.html' %}
-{% load static%}
+{% block title %}FAQ{% endblock title %}
 {% block content %}
     <div class="container m-5">
-
-        <a class="row btn btn-success float-right" role="button" href="{% url 'home' %}"> retour</a>
         <div class="row">
             <div class="col-4">
                 <div id="list-example" class="list-group">
                     <a class="list-group-item list-group-item-action" href="#list-item-1">Pourquoi faire une thérapie
-                        ?</a>
+                        ?
+                    </a>
                     <a class="list-group-item list-group-item-action" href="#list-item-2">Qui sont les personnes
-                        dirigeant
-                        ce site ?</a>
+                        dirigeant ce site ?
+                    </a>
                     <a class="list-group-item list-group-item-action" href="#list-item-3">Es-ce que la thérapie marche
-                        vraiment
-                        ?</a>
+                        vraiment ?
+                    </a>
                     <a class="list-group-item list-group-item-action" href="#list-item-4">Es-ce que tu as une autre
-                        question
-                        ?</a>
+                        question ?
+                    </a>
                 </div>
             </div>
-            <div class="col-8" style="overflow: auto;">
+            <div class="col-8" style="overflow: auto;max-height: 400px;">
                 <div data-spy="scroll" data-target="#list-example" data-offset="0" class="scrollspy-example">
                     <h4 id="list-item-1">Pourquoi faire une thérapie ?</h4>
                     <p>
@@ -39,10 +38,8 @@
                     </p>
                     <h4 id="list-item-2">Qui sont les personnes dirigeant ce site ?</h4>
                     <p>
-                        Professeur Raffard a lancé l'idée de se site dans le but d'une action plus facilitatrice des
-                        soins à
-                        la
-                        vue des étudiants.
+                        Professeur Raffard a lancé l'idée de ce site dans le but d'une action facilitatrice des
+                        soins à la vue des étudiants en difficultés.
                     </p>
                     <h4 id="list-item-3">Es-ce que la thérapie marche vraiment ?</h4>
                     <p>
@@ -58,6 +55,11 @@
                         <input type="text" name="question">
                     </p>
                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <a class="btn btn-success p-2" role="button" href="{% url 'home' %}">Retour</a>
             </div>
         </div>
     </div>
