@@ -86,7 +86,7 @@ class Sequence(models.Model):
     Une sequence est une liste de module qui s'enchaineront selon un ordre précis pour le patient, permet des tests expérimentaux des différents parcours.
     """
     nom= models.CharField(max_length=250)
-    possede = models.ManyToManyField(Module, through="ordre", blank=True)
+    possede = models.ManyToManyField(Module, through="Ordre", blank=True)
     nbModule=models.PositiveSmallIntegerField(default=0)
     def __str__(self):
         return self.nom
