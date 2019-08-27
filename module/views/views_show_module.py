@@ -1,21 +1,16 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render,redirect, get_object_or_404, get_list_or_404
-from module.form import SondageForm, AnalyseForm
-
+from django.views.generic import View, CreateView
 from django.http import JsonResponse
+
 
 from user.models import enAttente, Resultat, variableEtude
 from module.models import Section, Module, Ordre, Sequence
+from module.form import SondageForm, AnalyseForm
 
-from django.views.generic import View, CreateView
 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-
-
-# Create your views here.
-# https://www.techiediaries.com/python-django-ajax/
-# https://forum.alsacreations.com/topic-1-76028-1-Pdf-a-afficher-sur-page-Web.html
-
 
 from django.utils import timezone
 from datetime import datetime
@@ -23,14 +18,15 @@ from datetime import datetime
 #####################################################################################################################################
 def module(request, pk):
     """
-    Verifier s'il correspond à celui e liste d'attente
-    if in list attente -> possible -> et utiliser l'ordre pour l'appel
-    else -> redirect list module
+    Lors de l'affichage de la vue du module sans la section nous verifions si le patient suivie bien sa sequence et qu'il n'utilise pas
+    le code d'un autre module qui n'est pas enAttente
     """
     ##################################### Parcours sequentielle/ semi sequentielle
-    patient = request.user.patient
     if request.user.has_perm("module.Sequence_Individuel") or request.user.has_perm("module.Sequence_Groupal"):
+        #################### Variable Patient
+        patient = request.user.patient
         pkSequence = patient.get_sequence()
+        ####################### Verification que le patient suivie bien son module -> sinon erreur 404
         if  Ordre.objects.filter(sequence=pkSequence).exists():
             get_object_or_404(enAttente, module=pk, patient=request.user.patient, dateFin__isnull=True, dateVisible__lte=timezone.now())
 
@@ -164,7 +160,7 @@ class ReceveQuestion(CreateView):
 
 
 ######################## Questionnaire reçu cli 
-
+@login_required
 def questionnaireAnalyse(request, pk):
     """
     Deux types :
@@ -173,8 +169,8 @@ def questionnaireAnalyse(request, pk):
     ### Definition des varibles
     enAtt = enAttente.objects.get(pk=pk)
     patient= enAtt.patient
+    ####### Construction des formulaires
     if enAtt.isAnalyse == False:
-        ####### Construction des formulaires
         listVariable = variableEtude.objects.all()
         if request.method =='POST':
             OnePassage=False
@@ -201,40 +197,45 @@ def questionnaireAnalyse(request, pk):
                 listVariableForm.append(AnalyseForm(patient=patient, variable=var, enAttente=enAtt))
         ########################################### Recuperation des questions qui sont enAttente pour le clinicien
         rep = Resultat.objects.filter(enAttente=enAtt, reponse__isnull=False).values("question__question", "reponse__reponse","created_at").order_by("question")
+        repMuti = Resultat.objects.filter(enAttente=enAtt, reponses__isnull=False).values("question__question", "reponses__ManyReponses","created_at").order_by("question")
         repLibre = Resultat.objects.filter(enAttente=enAtt).exclude(reponseLibre="").values("question__question", "reponseLibre", "created_at")
-
+        print(repMuti)
         return render(request, "module/Affiche/AnalyseQuestionnaire.html",
                       {'enAtt':enAtt,
                        "repLibre":repLibre,
                        "rep":rep,
-                      "formVar":listVariableForm
-                      })
+                       "repMuti":repMuti,
+                       "formVar":listVariableForm,
+                       })
     else:
         return redirect('detail', patient=patient.pk)
 
 
-#https://docs.djangoproject.com/fr/2.2/topics/class-based-views/generic-editing/
-
-
 def listModules(request):
     """
-        https://www.sitepoint.com/best-html-wysiwyg-plugins/
-        https://quilljs.com/docs/quickstart/
-        https://djangopackages.org/grids/g/wysiwyg/
-        https://techwiser.com/best-wysiwyg-html-editor-open-source/
-    Il faut verifier l'appartenance au groupe et donner ce qu'il y a en attente.
-    https://docs.djangoproject.com/fr/2.2/ref/models/expressions/#value-expressions
+    Variable suite à la permission d'un suivie :
+        - noOrdre : Booléan qui determine si le patient possède un ordre à respecter ou non
+        - Patient : Model du patient utilisateur
+        - pkSequence : reçu par l'appel d'une méthode Patient qui récupère le pk de sa Séquence de module concerné
+    Fonction :
+        Un premier if qui conserne les patient suivie avec une séquence définit.
+            Le premier verifie s'il exite des modules en Attente
+            Le second if verifier s'il n'a pas de module en attente de finission, et qu'il possède une séquence remplit
+                Si c'est le cas il définit les premiers modules attribué à l'ordre 1
+            Sinon il ne possède pas de module définis
+            Une autre suite if s'il na pas de suite définis tous les modules sont attribué
+            Sinon seulement les modules concerner au niveau de sa suite.
+        S'il l'uitilsateur (patient et clinicien) n'a pas de séquence il peut voir tous les modules.
     """
     if request.user.has_perm( "module.Sequence_Groupal") or request.user.has_perm("module.Sequence_Individuel") :
-        """
-        module filter par en attente !
-        attention au dernier module 
-        """
+        ################# Variable #########################
         noOrdre= False
         patient = request.user.patient
         pkSequence = patient.get_sequence()
-
-        if Ordre.objects.filter(sequence=pkSequence).exists() and not enAttente.objects.filter(patient=patient, dateFin__isnull=True).exists():
+        ################### Ici on effectue les vérifications ################################
+        if enAttente.objects.filter(patient=patient, dateFin__isnull=True).exists():
+            pass
+        elif Ordre.objects.filter(sequence=pkSequence).exists() and not enAttente.objects.filter(patient=patient, dateFin__isnull=True).exists():
             print("Cree de modules dans enAttente car il ne possède aucun module enAttente")
             position=1
             listeAdd = Ordre.objects.filter(
@@ -254,6 +255,7 @@ def listModules(request):
         else :
             print("Possede des modules")
             modules = get_list_or_404(Module,pk__in=enAttente.objects.filter(patient=patient,dateFin__isnull=True).values('module'),isVisible=True, nbSection__gt=0)
+
     else :
         modules = get_list_or_404(Module ,isVisible=True, isQuestionnaireOnly=False, nbSection__gt=0)
     return render(request, "module/Affiche/Modules.html", {'modules':modules})
