@@ -87,8 +87,8 @@ class Patient(models.Model):
     telephone = models.CharField(max_length=10,blank=True, null=True)
     skype = models.CharField(max_length=20, blank=True, null=True)
     point = models.IntegerField(default=0)
-    dateFinTherapie = models.DateField(blank=True, null=True) 
-    
+    dateFinTherapie = models.DateField(blank=True, null=True)
+
     #----------------------------Model en ManyToMany-----------------------------------------------------
 
     section = models.ManyToManyField(Section, through="Parcours")
@@ -99,7 +99,16 @@ class Patient(models.Model):
         ordering =["clinicienACharge","groupePatients"]
     def __str__(self):
         return "Etudiant : {0}".format(self.user.username)
-    
+
+    def get_sequence(self):
+        """
+        Recupere la sequence appartenant à l'individu patient
+        :return:
+        """
+        if self.user.has_perm("module.Sequence_Individuel"):
+            return self.sequence.pk
+        elif self.user.has_perm("module.Sequence_Groupal"):
+            return self.groupePatients.sequence.pk
 
 
 ####################################### Communication patient/ clinicien ####################################### 
