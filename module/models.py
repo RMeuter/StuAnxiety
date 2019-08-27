@@ -77,7 +77,27 @@ class Section(models.Model):
         ordering=["module","ordre"]
     def __str__(self):
         return "{0} : {1} {2}".format(self.module, self.titre,self.ordre )
-    
+    def move_to_good_type (self):
+        """
+        Donne le type de section correspondante au type remplie si oublie ou erreur. Si rien rempli elle est supprimer.
+        :return:
+        """
+        if (self.SectionType == 1 and self.text == None) or (
+                self.SectionType == 3 and self.video == None) or (
+                self.SectionType == 2 and self.question == None):
+            if self.text != None:
+                self.SectionType = 1
+                self.save()
+            elif self.video != None:
+                self.SectionType = 3
+                self.save()
+            elif self.question != None:
+                self.SectionType = 2
+                self.save()
+            else:
+                self.delete()
+
+
 
 #-------------------------------------- Sequence ------------------------------------------------------------
 
