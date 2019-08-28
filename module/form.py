@@ -110,7 +110,10 @@ class SondageForm (forms.ModelForm):
             ################################ CheckBox et selction multiple ########################################
             if self.question.inputType == 3 or (self.question.inputType == 1 and self.question.isMultipleRep)  :
                 self.fields['reponses'] = forms.ModelMultipleChoiceField(queryset =None, to_field_name="pk", initial=0)
-                self.fields['reponses'].widget = forms.CheckboxSelectMultiple(attrs={'class':'form-check-input'})
+                if self.question.inputType == 3:
+                    self.fields['reponses'].widget = forms.CheckboxSelectMultiple(attrs={'class':'form-check'})
+                else:
+                    self.fields['reponses'].widget = forms.SelectMultiple(attrs={'class':'form-control'})
                 self.fields['reponses'].label = self.question.question
                 self.fields['reponses'].help_text = self.question.consigne
                 self.fields['reponses'].queryset=Reponse.objects.filter(question=self.question.pk)
@@ -119,7 +122,10 @@ class SondageForm (forms.ModelForm):
             ################################ Radio et selection unique ########################################
             elif self.question.inputType == 2 or (self.question.inputType == 1 and not self.question.isMultipleRep):
                 self.fields['reponse'] = forms.ModelChoiceField(queryset =None, to_field_name="pk", initial=0)
-                self.fields['reponse'].widget = forms.RadioSelect(attrs={'class':'form-check-input'})
+                if self.question.inputType == 2:
+                    self.fields['reponse'].widget = forms.RadioSelect(attrs={'class': 'form-check'})
+                else:
+                    self.fields['reponse'].widget = forms.Select(attrs={'class':'form-control'})
                 self.fields['reponse'].label = self.question.question
                 self.fields['reponse'].help_text = self.question.consigne
                 self.fields['reponse'].queryset=Reponse.objects.filter(question=self.question.pk)
