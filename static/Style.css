@@ -1,24 +1,18 @@
+body, html{
+    height:100%;
+}
 body {
     font-family: sans-serif;
-
 }
-
-nav {
-    background-color: #52ffe6;
-}
-
 #bandeau {
-    background-color: #52ffe6;
+    background-color: #6dffaf;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
-
 footer {
-    position: fixed;
-    height: 50px;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
-    margin-bottom: 0px;
+    clear: both;
+    position: relative;
+    height: 200px;
+    margin-top: -200px;
 }
