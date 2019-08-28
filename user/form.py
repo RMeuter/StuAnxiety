@@ -39,7 +39,7 @@ class PatientRegisterFrom(forms.ModelForm):
             'skype':"Veuillez donner votre nom d'utilisateur skype :"
         }
         widgets = {
-            'telephone': TextInput(attrs={'type': 'tel', 'class':"form-control", 'placeholder':"Exemple : 0610101010"},),#"pattern":"#^0[1-7][0-9]{8}$#"
+            'telephone': TextInput(attrs={'type': 'tel', 'class':"form-control", 'placeholder':"Exemple : 0610101010", "Pattern": "/(\+\d+(\s|-))?0\d(\s|-)?(\d{2}(\s|-)?){4}/"},),
         }
 
 ########################################## Clincien #############################################
@@ -89,28 +89,6 @@ class AgendaForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
-
-########################################## Reprise de Message #############################################
-    
-class MessagerieForm(forms.ModelForm):
-    """
-    Voir pour un plug in de messagerie ! 
-    """
-    class Meta:
-        model=Message
-        fields=['message']
-        labels={
-            "message":""
-        }
-        widgets={
-            'message': forms.Textarea(attrs={'class':"form-control"}),
-        }
-    def __init__(self, *args, **kwargs):
-        self.patient=kwargs['patient']
-        self.clinicien=kwargs['clinicien']
-        del kwargs['patient']
-        del kwargs['clinicien']
-        super(MessagerieForm, self).__init__(*args, **kwargs)
 
 ##########################################  enAttente #############################################
 class AjoutQuestForm(forms.ModelForm):

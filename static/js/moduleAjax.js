@@ -47,7 +47,19 @@ function video (titre, codeVideo){
 }
 
 function prepareQuestion(question){
-    return "<form id='question' method='post' class='col-12'><div class='col-12 form-group'>"+question+"</div><button class='offset-12 col-12 btn btn-outline-dark' id='envoie'>Confirmer</button></form>";
+    return "<form id='question' method='post' class='col-12 row' >"
+        + "<div class='col-12' style='height: 100px;'>"
+        + "<div class='form-group'>"
+        + question
+        + ""
+        + "</div>"
+        + "</div>"
+        + "<div class='col-12' style='height: 100px;'>"
+        + "<button class='btn btn-outline-dark float-none' id='envoie'>"
+        + "Confirmer"
+        + "</button>"
+        + "</div>"
+        + "</form>";
 }
 
 function envoieReponse(module, ordre, nombreSection, retour){

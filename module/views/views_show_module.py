@@ -19,7 +19,10 @@ from datetime import datetime
 def module(request, pk):
     """
     Lors de l'affichage de la vue du module sans la section nous verifions si le patient suivie bien sa sequence et qu'il n'utilise pas
-    le code d'un autre module qui n'est pas enAttente
+    le code d'un autre module qui n'est pas enAttente dans la premiere condition if
+
+    La seconde condition if nous verifions si l'utilisateur est un patient suivie afin de retrouver l'ordre qu'il avait laisser
+    en dernier temps sinon il est affecter au début du module.
     """
     ##################################### Parcours sequentielle/ semi sequentielle
     if request.user.has_perm("module.Sequence_Individuel") or request.user.has_perm("module.Sequence_Groupal"):
@@ -29,11 +32,9 @@ def module(request, pk):
         ####################### Verification que le patient suivie bien son module -> sinon erreur 404
         if  Ordre.objects.filter(sequence=pkSequence).exists():
             get_object_or_404(enAttente, module=pk, patient=request.user.patient, dateFin__isnull=True, dateVisible__lte=timezone.now())
-
-    ##################################### Tous parcours !-> Ordre
-    ordre = enAttente.objects.filter(module_id=pk, patient=request.user.patient,dateFin__isnull=True,dateVisible__lte=timezone.now()).values("ordreAtteint")
-    if ordre.exists():
-        ordre = ordre[0]['ordreAtteint']
+    ##################################### A tous utilisateur on affecte un ordre
+    if request.user.has_perm("user.parcours_Patient_Suivie") and enAttente.objects.filter(module_id=pk, patient=request.user.patient,dateFin__isnull=True,dateVisible__lte=timezone.now()).exists():
+        ordre = enAttente.objects.filter(module_id=pk, patient=request.user.patient,dateFin__isnull=True,dateVisible__lte=timezone.now()).values("ordreAtteint")[0]['ordreAtteint']
     else:
         ordre=1
     ##################################### Tous parcours !-> Module existant
@@ -41,77 +42,64 @@ def module(request, pk):
     return render(request, "module/Affiche/Module.html", {"module" : mod, "ordre":ordre})
 
 
-
-##############################
-
 ################################################### Appel Ajax de la section
-  
+
 class Sectiondetail(View):
     """
     La vue regarde qu'elle type d'objet il va renvoyer il y a trois possibilités
+
     """
     def  get(self, request, ordre, module):
         """
         on intégre enAttente avec l'histoire d'ordre
+
         """
         ######################### Existance
         section = get_object_or_404(Section, ordre=ordre, module=module)
-        
         ####### Variable
-        patient=request.user.patient
-        nb_Section = Module.objects.get(pk=module).nbSection
-        
-        #################################### Recuperation de l'ordre selon leur suivie
-        if request.user.has_perm("user.parcours_Patient_Suivie") or request.user.has_perm("user.parcours_Patient_Non_Suivie"):
+        nb_Section = section.module.nbSection
+
+        #################################### Recuperation de l'ordre si le patient est suivie
+        if request.user.has_perm("user.parcours_Patient_Suivie"):
+            #### Variable d'interet
+            patient=request.user.patient
             enAtt, create = enAttente.objects.get_or_create(patient=patient,module_id=module,dateFin__isnull=True)
+            if create:
+                print("Un objet en attente crée avec pour pk :", enAtt.pk)
             enAtt.ordreAtteint=ordre
             enAtt.save()
             print(enAtt.pk)
             request.session['enAttente']=enAtt.pk
-            
+
             ##################################### Verification si le module est finit
-            
+            print("nb section :", nb_Section, "ordre :", ordre)
             if nb_Section==ordre:
                 print("La fin est proche")
                 enAtt.dateFin=datetime.today()
                 enAtt.save()
-                
+
                 ####################### Verifie l'existance de module en attente encore
                 if not enAttente.objects.filter(patient=patient, module__isQuestionnaireOnly=False, dateFin__isnull=True).exists():
                     print("Verifie s'il n'existe plus encore des modules dans enAttente")
-                    
+
                     ###################################### Diff de suivie
-                    if request.user.has_perm("module.Sequence_Individuel"):
-                        print("premier passage indiv")
-                        pkSequence=request.user.patient.sequence.pk
-                    elif request.user.has_perm("module.Sequence_Groupal"):
-                        print("passage groupe")
-                        pkSequence=request.user.patient.groupePatients.sequence.pk
+                    pkSequence = patient.get_sequence()
                     try :
                         if pkSequence :
                             print("passage réordonne")
                             try:
                                 ######### On verifier que l'ordre +1 existe !
                                 ordreObj = Ordre.objects.get(module=module, sequence=pkSequence)
-                                print(ordreObj)
+                                print("verifie l'existance du module d'ordre + 1")
                                 if Ordre.objects.filter(sequence=pkSequence, ordre=(ordreObj.ordre+1)).exists():
-                                    print("Ajout des modules à enAttente")
-                                    """
-                                    verifie l'existance du module d'ordre + 1
-                                    """
                                     position=ordreObj.ordre+1
                                     listeAdd = Ordre.objects.select_related("module").filter(sequence=pkSequence, ordre=position)
+                                    print("Ajout des modules à enAttente")
                                     for moduleAdd in listeAdd :
                                         enAttente.objects.create(patient=patient, module=moduleAdd.module,ordreAtteint=0)
                                 else :
-                                    """
-                                    Ce else est archi important car il détermine la fin de la thérapie si ordre +1 n'existe pas pour les groupe
-                                    séquentielle
-                                    pour les semi séquentielle eux on surpprime toutes leur sequences et il auront accès à tous !
-                                    Voir
-                                    """
                                     if request.user.has_perm("module.Sequence_Individuel"):
-                                        print("supprimer l'ordre d'un patient semi-sequentielle !")
+                                        print("supprimer l'ordre d'un patient semi-sequentielle ! Revoir ici")
                                         Sequence.objects.get(pk=pkSequence).possede.clear()
                                     elif request.user.has_perm("module.Sequence_Groupal"):
                                         print("A finit sa thérapie")
@@ -122,14 +110,11 @@ class Sectiondetail(View):
                         print("Ne suis pas une séquence !")
                         
         #Integration du module ici
-        print(section.SectionType)
         if section.SectionType == 1 :
             return JsonResponse({"text":section.text})
-        elif section.SectionType == 2 and request.user.has_perm("user.parcours_Patient_Suivie"):
+        elif section.SectionType == 2 :
             formQ = SondageForm(question = section.question, enAttente=request.session["enAttente"])
             return JsonResponse({"question":"{0}".format(formQ)})
-        elif section.SectionType == 2 and not request.user.has_perm("user.parcours_Patient_Suivie"):
-            return get(self, request, ordre+1, module)
         elif section.SectionType == 3:
             return JsonResponse({"video":section.video, "titre":section.titre})
 
@@ -139,23 +124,25 @@ class Sectiondetail(View):
 class ReceveQuestion(CreateView):
     """
     checker si la derniere question à été effectuer !
-    https://stackoverflow.com/questions/4684618/django-modelmultiplechoicefield-wont-save-data
     """
     def post(self, request, ordre, pk):
         
         question = get_object_or_404(Section, ordre=ordre, module=pk).question
         formQ = SondageForm(request.POST,question=question, enAttente=request.session["enAttente"])
-        
-        if formQ.is_valid():
-            if question.isMultipleRep:
-                ins = formQ.save(commit=False)
-                ins.save()
-                formQ.save_m2m()
+
+        if request.user.has_perm("user.parcours_Patient_Suivie"):
+            if formQ.is_valid():
+                if question.isMultipleRep:
+                    ins = formQ.save(commit=False)
+                    ins.save()
+                    formQ.save_m2m()
+                else:
+                    formQ.save()
+                data= {"valide":True}
             else:
-                formQ.save()
-            data= {"valide":True}
+                data= {"valide":False}
         else:
-            data= {"valide":False}
+            data= {"valide":True}
         return JsonResponse(data)
 
 
