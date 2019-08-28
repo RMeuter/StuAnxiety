@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-success">
+<nav class="navbar navbar-expand-lg navbar-light bg-success" id="bandeau">
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01"
             aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -33,6 +33,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'clinicien' %}">Profil clinicien</a>
                 </li>
+                {% if  perms.user.Clinicien_Responsable  %}
+                 <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gestion' %}">Gestion</a>
+                </li>
+                {% endif %}
             {% endif %}
 
         </ul>
