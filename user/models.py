@@ -179,10 +179,7 @@ class enAttente (models.Model):
 
 ####################################### Trophé à voir par la suite ####################################### 
 
-####################################### Gestion Données patient par clinicien ####################################### 
-
-
-    
+####################################### Gestion Données patient par clinicien #######################################
 class Resultat(models.Model):
     """
     Un resultat d'une question donnée peut ou non contenir des reponses non cocher mais aussi libre et il est forcément est attribuer à un patient
