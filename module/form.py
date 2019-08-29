@@ -122,10 +122,10 @@ class SondageForm (forms.ModelForm):
             ################################ Radio et selection unique ########################################
             elif self.question.inputType == 2 or (self.question.inputType == 1 and not self.question.isMultipleRep):
                 self.fields['reponse'] = forms.ModelChoiceField(queryset =None, to_field_name="pk", initial=0)
-                if self.question.inputType == 2:
-                    self.fields['reponse'].widget = forms.RadioSelect(attrs={'class': 'form-check'})
-                else:
-                    self.fields['reponse'].widget = forms.Select(attrs={'class':'form-control'})
+                #if self.question.inputType == 2:
+                    #self.fields['reponse'].widget = forms.RadioSelect(attrs={'class': 'form-check', "style":"list-style-type: none;"})
+                #else:
+                self.fields['reponse'].widget = forms.Select(attrs={'class':'form-control'})
                 self.fields['reponse'].label = self.question.question
                 self.fields['reponse'].help_text = self.question.consigne
                 self.fields['reponse'].queryset=Reponse.objects.filter(question=self.question.pk)
