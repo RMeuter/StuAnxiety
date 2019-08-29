@@ -50,5 +50,5 @@ def verify_double(sender, instance, *args, **kwargs):
     :return: L'odre +1 de la section possédant l'ordre maximal
     """
     if Section.objects.filter(module=instance.module).exists():
-        val= Section.objects.filter(module=instance.module).aggregate(Max('ordre'))["ordre__max"]
+        val= Section.objects.filter(module=instance.module).order_by('-ordre').first()
         instance.ordre =  val +1
