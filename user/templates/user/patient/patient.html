@@ -19,7 +19,6 @@
                     <div class="jumbotron">
                         <h1 class="display-4">Bienvenue {{ user.first_name }} !</h1>
                         {% for date in rendezvous %}
-
                             {% if forloop.first %}
                                 <p class="lead"> Notification : </p>
                                 <ul>
@@ -31,8 +30,6 @@
                         {% empty %}
                             <h3>Rien à signaler !</h3>
                         {% endfor date in rdv %}
-
-
                         {% if progressModule != None %}
                             <p class="lead"> Votre progression :</p>
                         {% endif %}
@@ -71,23 +68,13 @@
                                 href="mailto:{{ user.patient.clinicienACharge.user.email }}">{{ user.patient.clinicienACharge.user.email }}</a>
                             <br> Psychologue clinicien agrés à l'hopital Lapeyronie
                         </div>
-
-                        {% if user.patient.clinicienACharge.user.is_active %}
-                            <div id="actif" class="alert alert-success col-12 text-center" role="alert">
-                                Actif en ce moment
-                            </div>
-                        {% else %}
-                            <div id="actif" class="alert alert-warning col-12 text-center" role="alert">
-                                N'est pas disponible
-                            </div>
-                        {% endif %}
                         <div class="col-12 shadow mt-2 rounded">
                             <div class="row border p-2" data-spy="scroll" style="height: 400px; max-height: 500px;">
-                                <textarea id="chat-log" class="col-12" style="overflow: auto;"></textarea>
+                                <textarea id="chat-log" class="col-12 form-control" style="overflow: auto;"></textarea>
                             </div>
-                            <div class="row col-12">
-                                <input type="text" class="col-10" id="chat-message-input">
-                                <button id="chat-message-submit" class="col-2 form-control btn btn-success">Envoyer
+                            <div class="row col-12 m-3">
+                                <input type="text" class="col-9 form-control" id="chat-message-input">
+                                <button id="chat-message-submit" class="ml-2 col-2 form-control btn btn-success">Envoyer
                                 </button>
                             </div>
                         </div>
