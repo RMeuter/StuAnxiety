@@ -63,6 +63,10 @@ class OrdreForm (forms.ModelForm):
     class Meta :
         model = Ordre
         fields = ('module', 'ordre')
+        labels={
+            "module":"Choisissez un module",
+            "ordre":"Donnez lui un rang d'activement dans sa séquence",
+        }
         
     def __init__(self, *args, **kwargs):
         """
@@ -93,11 +97,12 @@ class SondageForm (forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         """
-        inspiré de 
-        https://stackoverflow.com/questions/42745403/use-required-attribute-missing-1-required-positional-argument-initial-djang
-        https://www.programcreek.com/python/example/52461/django.forms.ModelChoiceField
-        https://getbootstrap.com/docs/4.3/components/forms/ -> pour design
-        https://docs.djangoproject.com/en/2.2/ref/forms/widgets/
+        A chaque question, le formulaire prend en compte la forme par des variable du Model question et crée le formulaire
+        Ainsi il dispose de consigne, de question, de type d'input, et d'une échelle de graduation pour former en premier lieux ces
+        question.
+        Le formulaire prend en compte directement les Modele Patient et enAttente pour définir le moment et à qui est du cette question
+
+        Objet retourné une question.
         """
         self.question=kwargs['question']
         self.enAttente=enAttente.objects.get(pk=kwargs['enAttente'])
