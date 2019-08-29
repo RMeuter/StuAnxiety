@@ -31,7 +31,7 @@ def patient(request):
         print(ModuleenAttente)
     ####### Interation message agenda
     rdv = Agenda.objects.filter(patient=patient, clinicien=patient.clinicienACharge).values("objet","debut","duree")
-    return render(request, "user/patient.html", {
+    return render(request, "user/patient/patient.html", {
         "progressModule": ModuleenAttente,
         "rendezvous":rdv,
         "salon":patient.pk,
@@ -82,4 +82,4 @@ def register(request):
     else:
         formU = UserRegisterFrom()
         formP = PatientRegisterFrom()
-    return render(request, 'user/register/pt.html', {'formU': formU, 'formP': formP})
+    return render(request, 'user/patient/../templates/user/clinicien/pt.html', {'formU': formU, 'formP': formP})

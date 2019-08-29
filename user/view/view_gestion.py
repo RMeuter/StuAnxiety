@@ -50,7 +50,7 @@ def Gestion(request):
     else:
         formP = GroupCreationForm()
         formG = GroupForm()
-    return render(request, "user/clinicien/gestionResponsable.html", {"PopulationFrom": formP,"GroupeForm":formG, "allClinicien":allClinicien, "allGroupe":allGroupe})
+    return render(request, "user/clinicien/../templates/user/Gestion/gestionResponsable.html", {"PopulationFrom": formP, "GroupeForm":formG, "allClinicien":allClinicien, "allGroupe":allGroupe})
 
 class EnvoiePopulationPatient(View):
     def get(self, request, pkPop):

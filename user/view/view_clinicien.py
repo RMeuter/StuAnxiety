@@ -14,9 +14,6 @@ from django.db.models import F, Sum, Max, Count
 # Time
 from django.utils import timezone
 
-
-
-
 def registerClinicien(request):
     ##Enregistremment patient
     if request.method =='POST':
@@ -40,39 +37,31 @@ def registerClinicien(request):
     else:
         formU = UserRegisterFrom()
         formC = ClinicienRegisterFrom()
-    return render(request, 'user/register/cl.html', {'formU': formU, 'formC': formC})
+    return render(request, 'user/clinicien/cl.html', {'formU': formU, 'formC': formC})
 
 
-@login_required
 @permission_required("user.parcours_Clinicien")
 def clinicien(request):
     """
-    Requete :
-    Liste patient message
-    Liste patient groupe et resultat
+        Recuperation par requete des listes des patients du clinicien, avec détail du nombre et du nombre de messages non lu
     """
     # Fonction liée au patient
     listPatients = Patient.objects.filter(clinicienACharge=request.user.clinicien).values('user__first_name','user__last_name','user__last_login','groupePatients__groupe__name', 'pk', 'NoSeeMsgQuantity', 'lastScore')
-    print(listPatients)
     nbPatient=listPatients.count()
-    nbMesg=listPatients.aggregate(nbmsg=Sum('NoSeeMsgQuantity'))
-    # Fonction lié à l'agenda
-    # https://docs.djangoproject.com/fr/2.2/ref/models/database-functions/
+    nbMesg=listPatients.aggregate(nbmsg=Sum('NoSeeMsgQuantity'))['nbmsg']
     listAgenda = Agenda.objects.filter(clinicien=request.user.clinicien).values('patient__user__last_name','patient__user__first_name','debut__time','duree','debut__date', 'objet')
     if not listAgenda.exists():
         listAgenda = None
     if nbPatient == 0:
-        print("J'ai pas de patient je suis mauvais pour finir")
         listPatients=None
     return render(request, "user/clinicien/Clinicien.html", {
         "listePatients":listPatients,
         "nbPatient":nbPatient,
-        "nbMesgNonLu":nbMesg['nbmsg'],
+        "nbMesgNonLu":nbMesg,
         "Calendrier":listAgenda
     })
 
 
-@login_required
 @permission_required("user.parcours_Clinicien")
 def detail(request, patient):
     """
@@ -81,7 +70,8 @@ def detail(request, patient):
     """
 
     ############# Patient
-    monPatient=get_object_or_404(Patient, pk=patient,clinicienACharge=request.user.clinicien).values("user__last_name", "user__first_name", "user__email", "telephone","skype", "sequence", "dateFinTherapie").get()
+    monPatient= Patient.objects.get(pk=patient)
+        #.values("user__last_name", "user__first_name", "user__email", "telephone","skype", "sequence", "dateFinTherapie")
     ##################### Form agenda
     if request.method == "POST":
         formA = AgendaForm(request.POST,patient=patient,clinicien=request.user.clinicien)
@@ -103,38 +93,38 @@ def detail(request, patient):
         formAffectQuest = AjoutQuestForm(patient=patient)
 
     ################# Form sequence
-    if monPatient["sequence"] != None :
+    if monPatient.sequence!= None :
         print("tu peux créer un formulaire pour redefinir la séquence d'un patient !")
-        maxValueOrdre=Ordre.objects.filter(sequence=monPatient["sequence"]).aggregate(maxOrdre=Max('ordre'))['maxOrdre']
+        maxValueOrdre=Ordre.objects.filter(sequence=monPatient.sequence).aggregate(maxOrdre=Max('ordre'))['maxOrdre']
         if request.method == "POST":
             print("tu peux créer un formulaire pour redefinir la séquence d'un patient !")
             if maxValueOrdre is not None:
-                formS =OrdreForm(request.POST,sequence=monPatient["sequence"], maxOrdre=maxValueOrdre )
+                formS =OrdreForm(request.POST,sequence=monPatient.sequence.pk, maxOrdre=maxValueOrdre )
             else:
-                formS =OrdreForm(request.POST,sequence=monPatient["sequence"], maxOrdre=0)
+                formS =OrdreForm(request.POST,sequence=monPatient.sequence.pk, maxOrdre=0)
                 if formS.is_valid():
                     formS.save()
                     formS.save_m2m()
                 else:
                     if maxValueOrdre is not None:
-                        formS =OrdreForm(sequence=monPatient["sequence"], maxOrdre=maxValueOrdre )
+                        formS =OrdreForm(sequence=monPatient.sequence.pk, maxOrdre=maxValueOrdre )
                     else:
-                        formS =OrdreForm(sequence=monPatient["sequence"], maxOrdre=0)
+                        formS =OrdreForm(sequence=monPatient.sequence.pk, maxOrdre=0)
         else:
             if maxValueOrdre is not None:
-                formS =OrdreForm(sequence=monPatient["sequence"], maxOrdre=maxValueOrdre )
+                formS =OrdreForm(sequence=monPatient.sequence.pk, maxOrdre=maxValueOrdre )
             else:
-                formS =OrdreForm(sequence=monPatient["sequence"], maxOrdre=0)
-        listOrdre = Ordre.objects.filter(sequence=monPatient["sequence"]).values('module__nom','ordre')
+                formS =OrdreForm(sequence=monPatient.sequence.pk, maxOrdre=0)
+        listOrdre = Ordre.objects.filter(sequence=monPatient.sequence).values('module__nom','ordre')
     else:
         listOrdre = None
         formS =None
 
     ############# Analyse
-    AnalyseQuestM = enAttente.objects.filter(patient=patient, dateFin__isnull=False).values("module__pk", "module__nom","pk", "isAnalyse")
+    AnalyseQuestM = enAttente.objects.filter(patient=patient, dateFin__isnull=False).values("module__nom","pk", "isAnalyse")
 
     ############# Gestion
-    affectationQuestionnaire = enAttente.objects.filter(patient=patient,module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "module__pk", "ordreAtteint")
+    affectationQuestionnaire = enAttente.objects.filter(patient=patient,module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "ordreAtteint")
     if not affectationQuestionnaire.exists():
         affectationQuestionnaire=None
 
@@ -162,7 +152,7 @@ def detail(request, patient):
     })
 
 ######################################################## Send Resultat data per Graph
-@login_required
+
 @permission_required("user.parcours_Clinicien")
 class sendDataDossier(View):
     def get(self, request, patient, variable):

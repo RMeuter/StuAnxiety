@@ -75,8 +75,8 @@ class Patient(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     #----------------------------Model en OneToOne et ForeignKey-------------------------------------------
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    groupePatients  = models.ForeignKey(Population, on_delete=models.SET_NULL, null=True)
-    clinicienACharge  = models.ForeignKey(Clinicien, on_delete=models.CASCADE, null=True,blank=True, related_name = 'clinicien_du_patient')
+    groupePatients = models.ForeignKey(Population, on_delete=models.SET_NULL, null=True)
+    clinicienACharge = models.ForeignKey(Clinicien, on_delete=models.CASCADE, null=True,blank=True, related_name = 'clinicien_du_patient')
     sequence = models.ForeignKey(Sequence,on_delete=models.SET_NULL,null=True, blank=True)
 
     #----------------------------Model propre au patient-------------------------------------------
@@ -90,7 +90,6 @@ class Patient(models.Model):
     dateFinTherapie = models.DateField(blank=True, null=True)
 
     #----------------------------Model en ManyToMany-----------------------------------------------------
-
     section = models.ManyToManyField(Section, through="Parcours")
     agenda = models.ManyToManyField(Clinicien, through="Agenda",related_name = 'Agenda')
     message = models.ManyToManyField(Clinicien, through="Message",related_name = 'Message')
