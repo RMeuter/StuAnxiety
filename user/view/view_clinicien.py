@@ -116,7 +116,7 @@ def detail(request, patient):
     AnalyseQuestM = enAttente.objects.filter(patient=patient, dateFin__isnull=False).values("module__nom","pk", "isAnalyse")
 
     ############# Gestion
-    affectationQuestionnaire = enAttente.objects.filter(patient=patient,module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "ordreAtteint")
+    affectationQuestionnaire = enAttente.objects.filter(patient=patient,module__isQuestionnaireOnly=True, dateFin__isnull=True).values("module__nom", "ordreAtteint", "module__nbSection")
     if not affectationQuestionnaire.exists():
         affectationQuestionnaire=None
 

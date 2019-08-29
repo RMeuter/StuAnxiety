@@ -37,7 +37,7 @@
                             </div>
                             <div class="col-12 shadow mt-2 rounded">
                                 <div class="row border p-2" data-spy="scroll" style="height: 400px; max-height: 500px;">
-                                <textarea id="chat-log" class="col-12 form-control"
+                                <textarea id="chat-log" readonly class="col-12 form-control"
                                           style="overflow: auto;"></textarea>
                                 </div>
                                 <div class="row col-12 m-3">
@@ -75,9 +75,14 @@
                                                         </span>
                                                     </th>
                                                     <th scope="row">
-                                                        <a href="#" role="button" class="btn btn-primary">
-                                                            Refaire l'analyse
-                                                        </a>
+                                                        <form method="post"
+                                                              action="{% url 'questionnaire' module.pk %}">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="newAnalyse"
+                                                                   value="{{ module.pk }}">
+                                                            <input type="submit" class="btn btn-primary"
+                                                                   value="Refaire l'analyse">
+                                                        </form>
                                                     </th>
                                                 </tr>
                                             {% else %}
@@ -138,7 +143,7 @@
                             <div class="alert alert-primary col-12 text-center" role="alert">
                                 Gestion et affectaton du patient
                             </div>
-                            <p>
+                            <p class="">
                                 <a class="btn btn-primary" data-toggle="collapse" href="#Questionnaire" role="button"
                                    aria-expanded="false" aria-controls="Questionnaire">
                                     Affecation Questionnaire
@@ -173,7 +178,7 @@
                                             {% for quest in affectationQuestionnaire %}
                                                 <tr>
                                                     <th scope="row">{{ quest.module__nom }}</th>
-                                                    <th>{{ quest.ordreAtteint }}</th>
+                                                    <th>{{ quest.ordreAtteint }} sur {{ quest.module__nbSection }}</th>
                                                 </tr>
                                             {% endfor %}
                                             </tbody>
@@ -192,49 +197,28 @@
                             </div>
 
                             <!--####################################### Affectation de séquence########################################### !-->
-                            <div class="collapse" id="Sequence">
-                                <div class="card card-body container">
-                                    {% if listOrdre is not None %}
-                                        <h4 class="col-12 text-center m-3">Sequence patient groupe
-                                            semi-séquentielle</h4>
-                                        <div class="col-12 row text-center mt-5">
-                                            {% for ordre in listOrdre %}
-                                                {% if not forloop.first %}
-                                                    {% ifchanged ordre.ordre %}
-                                                        <div class="col-1">
-                                                            <img style="width: 40px; height: 40px;"
-                                                                 src="{% static 'icon/right.png' %}">
-                                                        </div>
-                                                    {% endifchanged %}
-                                                {% endif %}
-                                                <div class="border col-2">
-                                                    {% ifchanged ordre.ordre %}
-                                                        <h6 class="text-success m-3">Rang {{ ordre.ordre }}</h6>
-                                                        <ul class="list-group m-2">
-                                                    {% endifchanged %}
-                                                    <li class="list-group-item">
-                                                        <button type="button" class="close" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                        {{ ordre.module__nom|truncatewords:80 }}
-                                                    </li>
-                                                    {% ifchanged ordre.ordre %}</ul>{% endifchanged %}
-                                                </div>
-                                            {% empty %}
-                                                <small class="text-warning">Votre patient n'a aucune séquence
-                                                    active</small>
-                                            {% endfor %}
-                                        </div>
+                            {% if listOrdre is not None %}
+                                <div class="collapse" id="Sequence">
+                                    <div class="card card-body container">
+                                        {% for foo in listOrdre %}
+                                            {% ifchanged ordre.ordre %}
+                                                <h5 class="list-group-item list-group-item-action">Rang {{ foo.ordre }}</h5>
+                                                <ul class="list-group list-group-flush">
+                                            {% endifchanged %}
+                                                    <li class="list-group-item">{{ foo.module__nom }}</li>
+                                            {% ifchanged ordre.ordre %}
+                                                </ul>
+                                            {% endifchanged %}
+                                        {% endfor %}
                                         <h6 class="col-12 text-center m-3">Ajout de module dans une séquence:</h6>
-                                        <form class="col-12" method="post">
+                                        <form class="col-12 border p-2" method="post">
                                             {% csrf_token %}
                                             {{ newOrdre|crispy }}
                                             <input class="btn btn-success col-12" type="submit">
                                         </form>
-                                    {% endif %}
+                                    </div>
                                 </div>
-                            </div>
-
+                            {% endif %}
                             <!--####################################### Agenda ########################################### !-->
                             <div class="collapse" id="Agenda">
                                 <div class="card card-body container">
@@ -252,7 +236,7 @@
 
                             <hr class="m-5">
                             {% if monPatient.dateFinTherapie is None %}
-                                <h4 class="col-12 text-center m-3">Fin thérapie</h4>
+                                <h4 class="col-12 text-center">Fin thérapie</h4>
                                 <form class="form-row" method="post" action="./{{ idPatient }}">
                                     {% csrf_token %}
                                     <input type="hidden" value="true" name="finTherapie">
@@ -283,21 +267,15 @@
     <script type="text/javascript">
         var patient = "{{idPatient}}";
         var listVar = {
-            0:
-                {"nom": "Toutes variables confondues"},
-        {% for v in var %} {{v.pk}}:
-        {
-            "nom"
-        :
-            "{{v.nom}}",
-                "minVar"
-        :{{v.seuilMinimal|floatformat:0}},
-            "maxVar"
-        :{{v.seuilMaximal|floatformat:0}},
-            "moyVar"
-        :{{v.seuilMoyen|floatformat:0}},
-        }
-        {% if not forloop.last %},{% endif %}{% endfor %}
+            0: {"nom": "Toutes variables confondues"},
+        {% for v in var %} {{v.pk}}: {
+            "nom" : "{{v.nom}}",
+            "minVar" : {{v.seuilMinimal|floatformat:0}},
+            "maxVar" : {{v.seuilMaximal|floatformat:0}},
+            "moyVar" : {{v.seuilMoyen|floatformat:0}}}
+        {% if not forloop.last %}
+        ,{% endif %}
+        {% endfor %}
         }
         ;
 
