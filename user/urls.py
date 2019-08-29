@@ -1,19 +1,24 @@
 from django.urls import path
-from . import views
+from user.view import view_patient, view_clinicien, view_gestion
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('profil', views.patient, name="profil"),
-    path('clinicien', views.clinicien, name="clinicien"),
-    path('detail/<str:patient>', views.detail, name="detail"),
-    path('detail/datasetDossier/<str:patient>/<int:variable>', views.sendDataDossier.as_view()),
-    
-    path('register/', views.register, name='register'),
-    path('registerClinicien/', views.registerClinicien, name='registerClinicien'),
+    ## Connexion et déconnexion
     path('login/', auth_views.LoginView.as_view(template_name='user/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='user/logout.html'), name='logout'),
 
-    path('Gestion', views.Gestion, name='gestion'),
-    path('GetPatientClinicien/<int:pkCli>', views.EnvoieClinicienPatient.as_view()),
-    path('EnvoiePopulationPatient/<int:pkPop>', views.EnvoiePopulationPatient.as_view()),
+    ## Partie Patient
+    path('register/', view_patient.register, name='register'),
+    path('profil', view_patient.patient, name="profil"),
+
+    ## Partie Clinicien
+    path('registerClinicien/', view_clinicien.registerClinicien, name='registerClinicien'),
+    path('clinicien', view_clinicien.clinicien, name="clinicien"),
+    path('detail/<str:patient>', view_clinicien.detail, name="detail"),
+    #path('detail/datasetDossier/<str:patient>/<int:variable>', view_clinicien.sendDataDossier.as_view),
+
+    ## Partie Gestion
+    path('Gestion', view_gestion.Gestion, name='gestion'),
+    path('GetPatientClinicien/<int:pkCli>', view_gestion.EnvoieClinicienPatient.as_view()),
+    path('EnvoiePopulationPatient/<int:pkPop>', view_gestion.EnvoiePopulationPatient.as_view()),
 ]
