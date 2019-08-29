@@ -4,7 +4,7 @@ from django.views.generic import View, CreateView
 from django.http import JsonResponse
 
 
-from user.models import enAttente, Resultat, variableEtude
+from user.models import enAttente, Resultat, variableEtude, Dossier
 from module.models import Section, Module, Ordre, Sequence
 from module.form import SondageForm, AnalyseForm
 
@@ -150,7 +150,6 @@ class ReceveQuestion(CreateView):
 @login_required
 def questionnaireAnalyse(request, pk):
     """
-
     :param request:
     :param pk: clé primaire d'une instance enAttente
     Fonction :
@@ -168,22 +167,29 @@ def questionnaireAnalyse(request, pk):
         ####### Verification de la présence de la méthode
 
         if request.method =='POST':
-            OnePassage=False
-            # Attention à l'ajout de variable au moment où met le formulaire et on le reçois
-            indexVar=0
-            for var in listVariable :
-                formA =AnalyseForm({'resultat':request.POST.getlist("resultat")[indexVar]}, patient=patient, variable=var, enAttente=enAtt)
-                if formA.is_valid():
-                    formA.save()
-                    if var.isImportante == True:
-                        patient.lastScore = request.POST.get("resultat")[indexVar]
-                        patient.save()
-                    OnePassage=True
-                indexVar+1
-            if OnePassage:
-                enAtt.isAnalyse=True
+            if "resultat" in request.POST :
+                OnePassage=False
+                # Attention à l'ajout de variable au moment où met le formulaire et on le reçois
+                indexVar=0
+                for var in listVariable :
+                    formA =AnalyseForm({'resultat':request.POST.getlist("resultat")[indexVar]}, patient=patient, variable=var, enAttente=enAtt)
+                    if formA.is_valid():
+                        formA.save()
+                        if var.isImportante == True:
+                            patient.lastScore = request.POST.get("resultat")[indexVar]
+                            patient.save()
+                        OnePassage=True
+                    indexVar+1
+                if OnePassage:
+                    enAtt.isAnalyse=True
+                    enAtt.save()
+                    return redirect('detail', patient=patient.pk)
+            elif "newAnalyse" in request.POST:
+                print("Rééffectue l'anayse")
+                enAtt= enAttente.objects.get(pk=request.POST.get("newAnalyse"))
+                Dossier.objects.filter(enAttente=enAtt).delete()
+                enAtt.isAnalyse=False
                 enAtt.save()
-                return redirect('detail', patient=patient.pk)
         else :
             ######################################### Création d'une suite de formulaire pour
             listVariableForm = []
@@ -191,7 +197,7 @@ def questionnaireAnalyse(request, pk):
                 listVariableForm.append(AnalyseForm(patient=patient, variable=var, enAttente=enAtt))
         ########################################### Recuperation des questions qui sont enAttente pour le clinicien
         rep = Resultat.objects.filter(enAttente=enAtt, reponse__isnull=False).values("question__question", "reponse__reponse","created_at").order_by("question")
-        repMuti = Resultat.objects.filter(enAttente=enAtt, reponses__isnull=False).values("question__question", "reponses__ManyReponses__reponse","created_at").order_by("question")
+        repMuti = Resultat.objects.filter(enAttente=enAtt, reponses__isnull=False).values("question__question", "reponses__reponse","created_at").order_by("question")
         repLibre = Resultat.objects.filter(enAttente=enAtt).exclude(reponseLibre="").values("question__question", "reponseLibre", "created_at")
         print(repMuti)
         return render(request, "module/Affiche/AnalyseQuestionnaire.html",
@@ -238,7 +244,8 @@ def listModules(request):
                 module__isVisible=True,
                 module__nbSection__gt=0).values('module')
             for moduleAdd in listeAdd :
-                enAttente.objects.create(patient=patient, module=moduleAdd.module,ordreAtteint=0)
+                mod = Module.objects.get(pk=moduleAdd["module"])
+                enAttente.objects.create(patient=patient, module=mod,ordreAtteint=1)
         else :
             print("Pas de enAttente, ni de séquence faite")
             noOrdre=True
