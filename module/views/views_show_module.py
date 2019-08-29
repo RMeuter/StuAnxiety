@@ -114,7 +114,7 @@ class Sectiondetail(View):
             return JsonResponse({"text":section.text})
         elif section.SectionType == 2 :
             formQ = SondageForm(question = section.question, enAttente=request.session["enAttente"])
-            return JsonResponse({"question":"{0}".format(formQ)})
+            return JsonResponse({"question":"{0}".format(formQ), "inputType":section.question.inputType})
         elif section.SectionType == 3:
             return JsonResponse({"video":section.video, "titre":section.titre})
 
@@ -150,8 +150,14 @@ class ReceveQuestion(CreateView):
 @login_required
 def questionnaireAnalyse(request, pk):
     """
-    Deux types :
-        - M pour question issue d'un module
+
+    :param request:
+    :param pk: clé primaire d'une instance enAttente
+    Fonction :
+        Verifie si enAttente n'a pas déjà été traiter,
+            Si non une liste les variables sur lequels se base le clinicien est crée
+
+    :return: Une view d'analyse d'un questionnaire appartenant à un module finis en Attente d'analyse clinicien
     """
     ### Definition des varibles
     enAtt = enAttente.objects.get(pk=pk)
@@ -159,10 +165,11 @@ def questionnaireAnalyse(request, pk):
     ####### Construction des formulaires
     if enAtt.isAnalyse == False:
         listVariable = variableEtude.objects.all()
+        ####### Verification de la présence de la méthode
+
         if request.method =='POST':
             OnePassage=False
             # Attention à l'ajout de variable au moment où met le formulaire et on le reçois
-            print(request.POST)
             indexVar=0
             for var in listVariable :
                 formA =AnalyseForm({'resultat':request.POST.getlist("resultat")[indexVar]}, patient=patient, variable=var, enAttente=enAtt)
@@ -172,7 +179,7 @@ def questionnaireAnalyse(request, pk):
                         patient.lastScore = request.POST.get("resultat")[indexVar]
                         patient.save()
                     OnePassage=True
-                indexVar+=1
+                indexVar+1
             if OnePassage:
                 enAtt.isAnalyse=True
                 enAtt.save()
@@ -184,7 +191,7 @@ def questionnaireAnalyse(request, pk):
                 listVariableForm.append(AnalyseForm(patient=patient, variable=var, enAttente=enAtt))
         ########################################### Recuperation des questions qui sont enAttente pour le clinicien
         rep = Resultat.objects.filter(enAttente=enAtt, reponse__isnull=False).values("question__question", "reponse__reponse","created_at").order_by("question")
-        repMuti = Resultat.objects.filter(enAttente=enAtt, reponses__isnull=False).values("question__question", "reponses__ManyReponses","created_at").order_by("question")
+        repMuti = Resultat.objects.filter(enAttente=enAtt, reponses__isnull=False).values("question__question", "reponses__ManyReponses__reponse","created_at").order_by("question")
         repLibre = Resultat.objects.filter(enAttente=enAtt).exclude(reponseLibre="").values("question__question", "reponseLibre", "created_at")
         print(repMuti)
         return render(request, "module/Affiche/AnalyseQuestionnaire.html",
