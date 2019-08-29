@@ -92,29 +92,21 @@ def detail(request, patient):
     else:
         formAffectQuest = AjoutQuestForm(patient=patient)
 
-    ################# Form sequence
+    ################# Form sequence #############################
     if monPatient.sequence!= None :
         print("tu peux créer un formulaire pour redefinir la séquence d'un patient !")
-        maxValueOrdre=Ordre.objects.filter(sequence=monPatient.sequence).aggregate(maxOrdre=Max('ordre'))['maxOrdre']
-        if request.method == "POST":
-            print("tu peux créer un formulaire pour redefinir la séquence d'un patient !")
-            if maxValueOrdre is not None:
-                formS =OrdreForm(request.POST,sequence=monPatient.sequence.pk, maxOrdre=maxValueOrdre )
-            else:
-                formS =OrdreForm(request.POST,sequence=monPatient.sequence.pk, maxOrdre=0)
-                if formS.is_valid():
-                    formS.save()
-                    formS.save_m2m()
-                else:
-                    if maxValueOrdre is not None:
-                        formS =OrdreForm(sequence=monPatient.sequence.pk, maxOrdre=maxValueOrdre )
-                    else:
-                        formS =OrdreForm(sequence=monPatient.sequence.pk, maxOrdre=0)
+        ### Définition d'un ordre maximal
+        if Ordre.objects.filter(sequence=monPatient.sequence).exists():
+            maxValueOrdre=Ordre.objects.filter(sequence=monPatient.sequence).aggregate(maxOrdre=Max('ordre'))['maxOrdre']
         else:
-            if maxValueOrdre is not None:
-                formS =OrdreForm(sequence=monPatient.sequence.pk, maxOrdre=maxValueOrdre )
-            else:
-                formS =OrdreForm(sequence=monPatient.sequence.pk, maxOrdre=0)
+            maxValueOrdre=0
+        ### Verification d'un post
+        if request.method == "POST":
+            formS =OrdreForm(request.POST,sequence=monPatient.sequence.pk, maxOrdre=maxValueOrdre)
+            if formS.is_valid():
+                formS.save()
+                formS.save_m2m()
+        formS =OrdreForm(sequence=monPatient.sequence.pk, maxOrdre=maxValueOrdre )
         listOrdre = Ordre.objects.filter(sequence=monPatient.sequence).values('module__nom','ordre')
     else:
         listOrdre = None
