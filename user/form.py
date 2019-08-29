@@ -10,7 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
 
 #################################################################################################
-################################### Enregistrement (register view)###############################
+################################### Enregistrement (patient view)###############################
 
 ########################################## User #############################################
 class UserRegisterFrom(UserCreationForm):
@@ -67,10 +67,11 @@ class AgendaForm(forms.ModelForm):
         labels = {
             'objet': 'Sujet de votre demande',
             'debut': 'Choissiez un moment :',
-            'duree':'Temps en heure et minutes'
+            'duree':'Temps en heure et minutes',
         }
         widgets = {
             'objet': TextInput(attrs={'type': 'text', 'class':"form-control"}),
+            'debut': TextInput(attrs={'type': 'datetime-local', 'class':"form-control"}),
             'duree': TextInput(attrs={'class':"form-control", "type":"time"}),
         }
         
@@ -96,10 +97,15 @@ class AjoutQuestForm(forms.ModelForm):
     Ajout d'un questionnaire au patient
     """
     isRepetition=forms.BooleanField(required=False)
-    Module=forms.ModelChoiceField(queryset=Module.objects.filter(isJournal=False, isQuestionnaireOnly=True), to_field_name="pk", widget=forms.Select(attrs={'class':'form-control'}), initial=0, required=True)
+    module=forms.ModelChoiceField(queryset=Module.objects.filter(isQuestionnaireOnly=True), to_field_name="pk", widget=forms.Select(attrs={'class':'form-control'}), initial=0, required=True)
     class Meta:
         model=enAttente
-        fields=['Module', 'repetition', 'dateVisible']
+        fields=['module', 'repetition', 'dateVisible']
+        labels={
+            'module':"Veuillez choisir un questionnaire",
+            'repetition':'Choisiez une periode de répétition du questionnaire : (en jour)',
+            'dateVisible': "Choisissez la date où le questionnaire sera visible :",
+        }
     def __init__(self, *args, **kwargs):
         self.patient=kwargs['patient']
         del kwargs['patient']
@@ -124,6 +130,7 @@ class PatientClinicienForm(forms.ModelForm):
         super(PatientClinicienForm, self).__init__(*args, **kwargs)
         self.fields['clinicien_du_patient'].widget = forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'})
         self.fields["clinicien_du_patient"].queryset = Patient.objects.exclude(clinicienACharge__pk=self.clincien__pk)
+
 ########################################## Population #############################################
 class PatientPopulationForm(forms.ModelForm):
     patient = forms.ModelMultipleChoiceField(label="Patient ne faisait pas partie du groupe",
