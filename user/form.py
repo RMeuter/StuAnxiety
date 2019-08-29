@@ -2,9 +2,9 @@
 from django import forms
 from django.forms.widgets import TextInput
 
-from .models import Population, Patient, Clinicien, Message, Agenda, enAttente
+from .models import Population, Patient, Clinicien, Agenda, enAttente
 from module.models import Module
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
 
 from django.utils import timezone
@@ -149,4 +149,14 @@ class GroupCreationForm(forms.ModelForm):
             "sequence": "Parcours utilisateur à definir",
             "lieu": "Population issue de"
         }
-        
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields= ['name']
+        labels = {
+            'name': "Le nom du groupe :"
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={"class":"form-control"})
+        }
