@@ -1,15 +1,13 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
-from .models import Message, Patient
-from django.utils import timezone
+from user.models import Message, Patient
 
 class ChatPatientConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['UUCIpatient']
         self.room_group_name = 'chat_%s' % self.room_name
         self.patient = Patient.objects.get(pk= self.room_name)
-
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
@@ -65,4 +63,3 @@ class ChatPatientConsumer(WebsocketConsumer):
             'message': message
         })
         )
-
