@@ -1,19 +1,18 @@
 {% extends 'layouts/baseClient.html' %}
 {% load static%}
+{% block title %}Gestion clinicien{% endblock title %}
 {% load crispy_forms_tags %}
 {% block content %}
-
-
 <div class="container">
     <div class="row">
 
         <h2 class="col-12 mt-3 text-center">Affectation clinicien patient :</h2>
         <div class="col-12 row">
-            <div class="form-group col-12">
+            <div class="form-group col-12 m-3">
                 <label for="clinicien">Clinicien</label>
                 <select class="form-control" id="clinicien">
                    {% for clinicien in allClinicien %}
-                    <option value="{{clinicien.pk}}">{{clinicien.user.last_name}} {{clinicien.user.first_name}} avec {{clinicien.nbPatient}} </option>
+                    <option value="{{clinicien.pk}}">{{clinicien.user__last_name}} {{clinicien.user__first_name}}</option>
                    {% endfor %}
                 </select>
             </div>
@@ -35,7 +34,7 @@
 
         <h2 class="col-12 mt-3 text-center">Affectation Groupe patient :</h2>
         <div class="col-12 row">
-            <div class="form-group col-12">
+            <div class="form-group col-12 m-3">
                 <label for="groupe">Groupe</label>
                 <select class="form-control" id="groupe">
                    {% for groupe in allGroupe %}
@@ -51,21 +50,17 @@
             <form class="offset-2 col-5 row border rounded p-2" method="post" action="./Gestion">
                 {% csrf_token %}
                 <div class="col-12" id="noListPatientP" style="overflow: auto; max-height: 500px; min-height: 200px;">
-
                 </div>
                 <input type='submit' value='Valider' class='col-12 btn btn-primary'/>
             </form>
-
         </div>
-        <!--##########################################!-->
-
-
         <!--##################################################!-->
         <hr class="col-12">
-            <h2 class="col-12">Création de groupe</h2>
+            <h2 class="col-12 m-3">Création de groupe</h2>
         <form method="post" action="./Gestion" class="col-12 bg-light mb-3">
             {% csrf_token %}
-            {{GroupFrom|crispy}}
+            {{GroupeForm|crispy}}
+            {{PopulationFrom|crispy}}
             <input type="submit" class="btn btn-success"/>
         </form>
 
