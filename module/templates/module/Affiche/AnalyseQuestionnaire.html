@@ -1,6 +1,6 @@
 {% extends 'layouts/baseClient.html' %}
 {% load crispy_forms_tags %}
-{% block title %}{{ Questionnaire.nom }}{% endblock title %}
+{% block title %}{{ enAtt.module.nom }}{% endblock title %}
 {% load static %}
 {% block content %}
     <div class="container">
@@ -23,16 +23,14 @@
                     <p class="col-12 lead text-right">
                         <small>{{ reponse.created_at }} </small>
                     </p>
-                    <div class="col-12">
-                    Reponse du patient :<br>
-                    <strong>
+                    <h6 class="col-12 text-center">Reponse du patient :</h6>
+                    <ul class="col-12 list-group list-group-flush text-center">
                 {% endifchanged %}
-            {{ reponse.reponses__reponse }}<br>
-            {% ifchanged reponse.question__question %}
-                </strong>
+            <li class="list-group-item">{{ reponse.reponses__reponse }}</li>
+            {% if forloop.last %}
+                </ul>
                 </div>
-                </div>
-            {% endifchanged %}
+                {% endif %}
             {% endfor %}
 
             {% for reponse in repLibre %}
