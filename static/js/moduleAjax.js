@@ -56,15 +56,13 @@ function prepareQuestion(question, inputType) {
     $("#suivant").off("click");
     $("#suivant").remove();
 
-    if ( inputType==2 || inputType == 3) {
+    if (inputType == 3) {
         str = "<div class='form-check'>" +
             question + "</div>";
     } else {
-        str = + "<div class='form-group'>"
-        + question + "</div>";
+        str=question;
     }
-    alert(question);
-    return "<form id='question' method='post' class='col-12 row'>"
+    return "<form id='question' method='post' class='col-12 text-center row'>"
         + str
         + "<button class='col-12 btn btn-outline-dark m-3' id='envoie'>"
         + "Confirmer"
@@ -101,10 +99,8 @@ function envoieReponse(module, ordre, nombreSection, retour) {
 function passage(module, ordre, nombreSection, retour) {
     if (ordre < (nombreSection)) {
         ordre++;
-        alert('En dessous du nbSec: '+ordre+" au niveau plus un");
         affiche(module, ordre, nombreSection, retour);
     } else if (ordre == (nombreSection)) {
-        alert('Egale à nbSec');
         ordre++;
         $('#suivant').text("Terminer");
         affiche(module, ordre, nombreSection, retour);
