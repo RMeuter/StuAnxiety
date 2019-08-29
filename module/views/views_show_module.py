@@ -77,11 +77,11 @@ class Sectiondetail(View):
                 print("La fin est proche")
                 enAtt.dateFin=datetime.today()
                 enAtt.save()
-
+                if enAtt.repetition > 0:
+                    enAttente.objects.create(patient=enAtt.patient,module=enAtt.module,repetition=enAtt.repetition,dateVisible=datetime.today()+datetime.timedelta(days=enAtt.repetition))
                 ####################### Verifie l'existance de module en attente encore
                 if not enAttente.objects.filter(patient=patient, module__isQuestionnaireOnly=False, dateFin__isnull=True).exists():
                     print("Verifie s'il n'existe plus encore des modules dans enAttente")
-
                     ###################################### Diff de suivie
                     pkSequence = patient.get_sequence()
                     try :
@@ -129,7 +129,6 @@ class ReceveQuestion(CreateView):
         
         question = get_object_or_404(Section, ordre=ordre, module=pk).question
         formQ = SondageForm(request.POST,question=question, enAttente=request.session["enAttente"])
-
         if request.user.has_perm("user.parcours_Patient_Suivie"):
             if formQ.is_valid():
                 if question.isMultipleRep:
